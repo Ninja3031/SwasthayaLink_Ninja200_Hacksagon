@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
+import medicineRoutes from "./routes/medicine.routes.js";
 
 const app = express();
 
@@ -17,7 +18,15 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 
 // Route imports
 import authRoutes from './routes/auth.routes.js';
+import hospitalRoutes from './routes/hospital.routes.js';
+import doctorRoutes from './routes/doctor.routes.js';
+import appointmentRoutes from './routes/appointment.routes.js';
+
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/hospitals", hospitalRoutes);
+app.use("/api/v1/doctors", doctorRoutes);
+app.use("/api/v1/appointments", appointmentRoutes);
+app.use("/api/medicines", medicineRoutes);
 
 // Root route
 app.get("/api/v1/healthcheck", (req, res) => {

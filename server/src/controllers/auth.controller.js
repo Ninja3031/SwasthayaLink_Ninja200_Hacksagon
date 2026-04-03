@@ -1,14 +1,15 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/User.js";
+import { Hospital } from "../models/Hospital.js";
+import { Doctor } from "../models/Doctor.js";
 import { ApiResponse } from "../utils/apiResponse.js";
+import { ROLES } from "../constants/roles.js";
 
-const generateAccessAndRefreshTokens = async (userId) => {
+const generateAccessTokens = async (userId) => {
   try {
     const user = await User.findById(userId);
     const accessToken = user.generateAccessToken();
-    // Assuming refresh token logic is also implemented (omitted for brevity)
-    
     return { accessToken };
   } catch (error) {
     throw new ApiError(500, "Something went wrong while generating token");
@@ -16,10 +17,11 @@ const generateAccessAndRefreshTokens = async (userId) => {
 };
 
 export const registerUser = asyncHandler(async (req, res) => {
+  console.log("Incoming Register Request:", req.body);
   const { name, email, password, role, contactNumber } = req.body;
 
-  if ([name, email, password].some((field) => field?.trim() === "")) {
-    throw new ApiError(400, "All fields are required");
+  if ([name, email, password].some((field) => !field || field.trim() === "")) {
+    throw new ApiError(400, "Name, email, and password are required");
   }
 
   const existedUser = await User.findOne({ email });
@@ -27,13 +29,36 @@ export const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "User with email already exists");
   }
 
+  const userRole = Object.values(ROLES).includes(role) ? role : ROLES.PATIENT;
+
   const user = await User.create({
     name,
     email,
     password,
-    role,
+    role: userRole,
     contactNumber
   });
+
+  // Role-specific initializations
+  if (userRole === ROLES.HOSPITAL) {
+    await Hospital.create({
+      user: user._id,
+      registrationNumber: `HOSP-${Date.now()}`,
+      facilityType: "General Hospital"
+    });
+  }
+
+  if (userRole === ROLES.DOCTOR) {
+    // In a real flow, a doctor must be linked to a hospital. We simulate this by linking them to the first available hospital or leaving it empty if none exists
+    const firstHospital = await Hospital.findOne();
+    if (firstHospital) {
+      await Doctor.create({
+        user: user._id,
+        hospital: firstHospital._id,
+        specialization: "General Physician"
+      });
+    }
+  }
 
   const createdUser = await User.findById(user._id).select("-password -refreshToken");
 
@@ -65,7 +90,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Invalid user credentials");
   }
 
-  const { accessToken } = await generateAccessAndRefreshTokens(user._id);
+  const { accessToken } = await generateAccessTokens(user._id);
 
   const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
 
@@ -87,6 +112,5 @@ export const logoutUser = asyncHandler(async (req, res) => {
 
   return res.status(200)
     .clearCookie("accessToken", options)
-    .clearCookie("refreshToken", options)
     .json(new ApiResponse(200, {}, "User logged out"));
 });

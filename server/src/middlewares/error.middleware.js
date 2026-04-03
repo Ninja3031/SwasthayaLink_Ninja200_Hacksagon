@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { ApiError } from '../utils/ApiError.js';
 
 const errorHandler = (err, req, res, next) => {
+  console.error("ERROR CAUGHT IN MIDDLEWARE =>", err);
   let error = err;
 
   if (!(error instanceof ApiError)) {
