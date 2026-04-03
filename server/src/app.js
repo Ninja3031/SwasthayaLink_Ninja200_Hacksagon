@@ -21,12 +21,14 @@ import authRoutes from './routes/auth.routes.js';
 import hospitalRoutes from './routes/hospital.routes.js';
 import doctorRoutes from './routes/doctor.routes.js';
 import appointmentRoutes from './routes/appointment.routes.js';
+import patientRoutes from './routes/patient.routes.js';
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/hospitals", hospitalRoutes);
 app.use("/api/v1/doctors", doctorRoutes);
 app.use("/api/v1/appointments", appointmentRoutes);
 app.use("/api/medicines", medicineRoutes);
+app.use("/api/v1/patient", patientRoutes);
 
 // Root route
 app.get("/api/v1/healthcheck", (req, res) => {

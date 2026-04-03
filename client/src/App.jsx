@@ -7,6 +7,14 @@ import HospitalLayout from "./components/Layout/HospitalLayout";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import DoctorDashboard from "./pages/doctor/DoctorDashboard";
 import HospitalDashboard from "./pages/hospital/HospitalDashboard";
+import HealthRecords from "./pages/patient/HealthRecords";
+import Appointments from "./pages/patient/Appointments";
+import Medications from "./pages/patient/Medications";
+import Reminders from "./pages/patient/Reminders";
+import SymptomTracker from "./pages/patient/SymptomTracker";
+import LabResults from "./pages/patient/LabResults";
+import EmergencySOS from "./pages/patient/EmergencySOS";
+import Chat from "./pages/patient/Chat";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { isAuthenticated, user } = useAuthStore();
@@ -31,9 +39,14 @@ function App() {
         {/* Patient Routes */}
         <Route path="/patient" element={<ProtectedRoute allowedRoles={["patient"]}><PatientLayout /></ProtectedRoute>}>
           <Route path="dashboard" element={<PatientDashboard />} />
-          <Route path="search" element={<div className="p-8 text-center text-gray-500 font-semibold bg-white rounded-xl shadow-sm border border-gray-100">Search Hospitals Placeholder...</div>} />
-          <Route path="book" element={<div className="p-8 text-center text-gray-500 font-semibold bg-white rounded-xl shadow-sm border border-gray-100">Book Appointment Placeholder...</div>} />
-          <Route path="appointments" element={<div className="p-8 text-center text-gray-500 font-semibold bg-white rounded-xl shadow-sm border border-gray-100">Patient Appointments Placeholder...</div>} />
+          <Route path="appointments" element={<Appointments />} />
+          <Route path="medications" element={<Medications />} />
+          <Route path="reminders" element={<Reminders />} />
+          <Route path="records" element={<HealthRecords />} />
+          <Route path="symptoms" element={<SymptomTracker />} />
+          <Route path="lab-results" element={<LabResults />} />
+          <Route path="chat" element={<Chat />} />
+          <Route path="sos" element={<EmergencySOS />} />
         </Route>
 
         {/* Doctor Routes */}

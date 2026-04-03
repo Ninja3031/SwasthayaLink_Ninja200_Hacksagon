@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { Activity, Home, Search, CalendarPlus, Calendar, LogOut } from "lucide-react";
+import { Activity, Home, CalendarCheck, Pill, Bell, Stethoscope, TestTube, AlertOctagon, MessageCircle, LogOut } from "lucide-react";
 import useAuthStore from "../../store/useAuthStore";
 
 export default function PatientLayout() {
@@ -13,9 +13,14 @@ export default function PatientLayout() {
 
   const menus = [
     { name: "Dashboard", link: "/patient/dashboard", icon: Home },
-    { name: "Search Hospitals", link: "/patient/search", icon: Search },
-    { name: "Book Appointment", link: "/patient/book", icon: CalendarPlus },
-    { name: "My Appointments", link: "/patient/appointments", icon: Calendar },
+    { name: "Appointments", link: "/patient/appointments", icon: CalendarCheck },
+    { name: "Medications", link: "/patient/medications", icon: Pill },
+    { name: "Reminders", link: "/patient/reminders", icon: Bell },
+    { name: "Health Records", link: "/patient/records", icon: Activity },
+    { name: "Symptom Tracker", link: "/patient/symptoms", icon: Stethoscope },
+    { name: "Lab Results", link: "/patient/lab-results", icon: TestTube },
+    { name: "Messaging", link: "/patient/chat", icon: MessageCircle },
+    { name: "Emergency SOS", link: "/patient/sos", icon: AlertOctagon },
   ];
 
   return (
