@@ -1,17 +1,16 @@
-const OpenAI = require("openai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Initialize Gemini
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 async function analyzeWithLLM(message) {
   try {
-    const response = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: `
+    // ✅ WORKING MODEL
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash"
+    });
+
+    const prompt = `
 You are a medical triage assistant.
 
 Classify the user's condition into:
@@ -19,29 +18,40 @@ Classify the user's condition into:
 - MODERATE
 - LOW
 
-Also give a short reason.
-
-Respond in JSON format:
+Respond ONLY in valid JSON:
 {
-  "level": "...",
-  "reason": "..."
+  "level": "EMERGENCY or MODERATE or LOW",
+  "reason": "short explanation"
 }
-`
-        },
-        {
-          role: "user",
-          content: message
-        }
-      ],
-    });
 
-    const text = response.choices[0].message.content;
+User: ${message}
+`;
 
-    return JSON.parse(text);
+    const result = await model.generateContent(prompt);
+
+    const text = result.response.text();
+
+    console.log("🔥 RAW GEMINI RESPONSE:\n", text);
+
+    // 🧠 Extract JSON safely
+    const match = text.match(/\{[\s\S]*\}/);
+
+    if (!match) {
+      throw new Error("No JSON found in Gemini response");
+    }
+
+    const cleanText = match[0];
+
+    return JSON.parse(cleanText);
 
   } catch (err) {
-    console.log("LLM Error:", err);
-    return { level: "LOW", reason: "Fallback response" };
+    console.log("❌ GEMINI ERROR FULL:", err);
+    console.log("❌ GEMINI MESSAGE:", err.message);
+
+    return {
+      level: "LOW",
+      reason: "Fallback response"
+    };
   }
 }
 

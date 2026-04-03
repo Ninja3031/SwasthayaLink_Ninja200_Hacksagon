@@ -1,26 +1,29 @@
 require("dotenv").config();
-const { analyzeWithLLM } = require("./utils/llmAgent.js");
+
 const express = require("express");
 const app = express();
 
+// Agents
 const { detectEmergency } = require("./utils/emergencyAgent");
+const { analyzeWithLLM } = require("./utils/llmAgent");
 
 // Middleware
 app.use(express.json());
 
-// Test route
+// ✅ Test route
 app.get("/test", (req, res) => {
   console.log("Test route hit");
   res.send("Working!");
 });
 
-// Main chat route
+// ✅ Main chat route
 app.post("/chat", async (req, res) => {
   console.log("----- NEW REQUEST -----");
 
   const { message } = req.body;
   console.log("Received message:", message);
 
+  // ❌ No message
   if (!message) {
     return res.json({
       type: "error",
@@ -28,9 +31,9 @@ app.post("/chat", async (req, res) => {
     });
   }
 
-  // Emergency check
+  // 🚨 Rule-based emergency check (fast)
   if (detectEmergency(message)) {
-    console.log("🚨 Emergency detected!");
+    console.log("🚨 Emergency detected (rule-based)");
 
     return res.json({
       type: "emergency",
@@ -38,11 +41,12 @@ app.post("/chat", async (req, res) => {
     });
   }
 
-  // LLM reasoning
+  // 🧠 Gemini LLM reasoning
   const result = await analyzeWithLLM(message);
 
   console.log("LLM Result:", result);
 
+  // 🚨 Emergency (LLM)
   if (result.level === "EMERGENCY") {
     return res.json({
       type: "emergency",
@@ -50,6 +54,7 @@ app.post("/chat", async (req, res) => {
     });
   }
 
+  // ⚠️ Moderate
   if (result.level === "MODERATE") {
     return res.json({
       type: "warning",
@@ -57,13 +62,14 @@ app.post("/chat", async (req, res) => {
     });
   }
 
+  // ✅ Low
   return res.json({
     type: "normal",
     reply: `✅ ${result.reason}`
   });
 });
 
-// Start server
+// ✅ Start server
 app.listen(5001, () => {
   console.log("🚀 Server running on port 5001");
 });
