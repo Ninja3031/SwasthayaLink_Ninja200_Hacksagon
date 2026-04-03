@@ -5,7 +5,7 @@ const app = express();
 
 // Agents
 const { detectEmergency } = require("./utils/emergencyAgent");
-const { analyzeWithLLM } = require("./utils/llmAgent");
+const { analyzeWithLLM } = require("./utils/llmagent");
 
 // Middleware
 app.use(express.json());
