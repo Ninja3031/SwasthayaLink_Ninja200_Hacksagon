@@ -8,8 +8,12 @@ import {
   setReminder,
   getReminders,
   toggleReminder,
+  updateReminderStatus,
+  placeOrder,
   logSymptoms,
   getSymptomsHistory,
+  updateSymptom,
+  deleteSymptom,
   sendMessage,
   getMessages,
   triggerSOS
@@ -29,9 +33,14 @@ router.route("/prescriptions").get(getPrescriptions);
 // Reminders
 router.route("/reminders").get(getReminders).post(setReminder);
 router.route("/reminders/:reminderId/toggle").patch(toggleReminder);
+router.route("/reminders/:reminderId/status").put(updateReminderStatus);
+
+// Orders
+router.route("/orders").post(placeOrder);
 
 // Symptoms
 router.route("/symptoms").get(getSymptomsHistory).post(logSymptoms);
+router.route("/symptoms/:id").put(updateSymptom).delete(deleteSymptom);
 
 // Messages
 router.route("/messages/:contactId").get(getMessages);

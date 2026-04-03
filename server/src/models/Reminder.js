@@ -19,8 +19,22 @@ const reminderSchema = new mongoose.Schema(
     ],
     frequency: {
       type: String,
-      default: "Daily",
+      default: "Once daily",
     },
+    startDate: {
+      type: Date,
+      required: true,
+    },
+    endDate: {
+      type: Date,
+    },
+    logs: [
+      {
+        date: { type: String }, // e.g. "YYYY-MM-DD"
+        time: { type: String }, // e.g. "08:00 AM"
+        status: { type: String, enum: ["pending", "taken", "missed"], default: "pending" }
+      }
+    ],
     isActive: {
       type: Boolean,
       default: true,

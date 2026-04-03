@@ -39,14 +39,18 @@ export const getPrescriptions = asyncHandler(async (req, res) => {
 
 // --- REMINDERS ---
 export const setReminder = asyncHandler(async (req, res) => {
-  const { medicineName, times, frequency } = req.body;
-  if (!medicineName || !times?.length) throw new ApiError(400, "Medicine name and times are required");
+  const { medicineName, times, frequency, startDate, endDate } = req.body;
+  if (!medicineName || !times?.length || !startDate) {
+    throw new ApiError(400, "Medicine name, times, and start date are required");
+  }
 
   const reminder = await Reminder.create({
     patient: req.user._id,
     medicineName,
     times,
-    frequency
+    frequency,
+    startDate,
+    endDate
   });
 
   return res.status(201).json(new ApiResponse(201, reminder, "Reminder set"));
@@ -68,23 +72,81 @@ export const toggleReminder = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, reminder, "Reminder toggled"));
 });
 
+export const updateReminderStatus = asyncHandler(async (req, res) => {
+  const { reminderId } = req.params;
+  const { date, time, status } = req.body;
+
+  const reminder = await Reminder.findById(reminderId);
+  if (!reminder) throw new ApiError(404, "Reminder not found");
+
+  // Check if log already exists for this exact date/time
+  const existingLogIndex = reminder.logs.findIndex(l => l.date === date && l.time === time);
+  
+  if (existingLogIndex > -1) {
+     reminder.logs[existingLogIndex].status = status;
+  } else {
+     reminder.logs.push({ date, time, status });
+  }
+
+  await reminder.save();
+  return res.status(200).json(new ApiResponse(200, reminder, `Reminder marked as ${status}`));
+});
+
+// --- ORDERS ---
+import { Order } from "../models/Order.js";
+
+export const placeOrder = asyncHandler(async (req, res) => {
+  const { medicineName } = req.body;
+  
+  if (!medicineName) throw new ApiError(400, "Medicine name is required for reordering");
+
+  const order = await Order.create({
+    patient: req.user._id,
+    medicineName,
+    status: "placed"
+  });
+
+  return res.status(201).json(new ApiResponse(201, order, "Prescribed Medicine Reordered Setup Success!"));
+});
+
 // --- SYMPTOMS ---
 export const logSymptoms = asyncHandler(async (req, res) => {
-  const { symptoms, notes } = req.body;
-  if (!symptoms?.length) throw new ApiError(400, "Provide at least one symptom");
+  const { symptomTitle, description, severity, dateTime } = req.body;
+  if (!symptomTitle || !severity || !dateTime) throw new ApiError(400, "Provide title, severity, and date");
 
   const symptomLog = await Symptom.create({
     patient: req.user._id,
-    symptoms,
-    notes
+    symptomTitle,
+    description,
+    severity,
+    dateTime
   });
 
-  return res.status(201).json(new ApiResponse(201, symptomLog, "Symptoms logged"));
+  return res.status(201).json(new ApiResponse(201, symptomLog, "Symptom securely tracked"));
 });
 
 export const getSymptomsHistory = asyncHandler(async (req, res) => {
-  const history = await Symptom.find({ patient: req.user._id }).sort("-createdAt");
-  return res.status(200).json(new ApiResponse(200, history, "Symptom history fetched"));
+  const history = await Symptom.find({ patient: req.user._id }).sort("-dateTime");
+  return res.status(200).json(new ApiResponse(200, history, "Symptoms fetched"));
+});
+
+export const updateSymptom = asyncHandler(async (req, res) => {
+  const { symptomTitle, description, severity, dateTime } = req.body;
+  const symptom = await Symptom.findOneAndUpdate(
+    { _id: req.params.id, patient: req.user._id },
+    { symptomTitle, description, severity, dateTime },
+    { new: true }
+  );
+
+  if (!symptom) throw new ApiError(404, "Symptom not found or unauthorized");
+  return res.status(200).json(new ApiResponse(200, symptom, "Symptom updated"));
+});
+
+export const deleteSymptom = asyncHandler(async (req, res) => {
+  const symptom = await Symptom.findOneAndDelete({ _id: req.params.id, patient: req.user._id });
+  if (!symptom) throw new ApiError(404, "Symptom not found or unauthorized");
+
+  return res.status(200).json(new ApiResponse(200, {}, "Symptom deleted"));
 });
 
 // --- MESSAGES ---

@@ -7,16 +7,21 @@ const symptomSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    symptoms: [
-      {
-        name: { type: String, required: true },
-        severity: { type: Number, min: 1, max: 10, required: true },
-      }
-    ],
-    notes: String,
-    linkedAppointment: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Appointment",
+    symptomTitle: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+    },
+    severity: {
+      type: String,
+      enum: ["Mild", "Moderate", "Severe"],
+      required: true,
+    },
+    dateTime: {
+      type: Date,
+      required: true,
     }
   },
   { timestamps: true }

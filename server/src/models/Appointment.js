@@ -38,10 +38,14 @@ const appointmentSchema = new Schema(
       required: true,
       default: "General Checkup"
     },
-    symptoms: {
-      type: [String],
-      default: []
-    }
+    selectedSymptoms: [
+      {
+        symptomTitle: String,
+        description: String,
+        severity: String,
+        dateTime: Date
+      }
+    ]
   },
   { timestamps: true }
 );

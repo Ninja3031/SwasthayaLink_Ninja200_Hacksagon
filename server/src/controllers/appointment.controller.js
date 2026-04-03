@@ -8,7 +8,7 @@ import { ApiResponse } from "../utils/apiResponse.js";
 // @route POST /api/v1/appointments
 // @desc Book an appointment (Patient Portal)
 export const bookAppointment = asyncHandler(async (req, res) => {
-  const { doctorId, hospitalId, date, timeSlot, notes, reason, symptoms } = req.body;
+  const { doctorId, hospitalId, date, timeSlot, notes, reason, selectedSymptoms } = req.body;
   
   const appointment = await Appointment.create({
     patient: req.user._id,
@@ -18,7 +18,7 @@ export const bookAppointment = asyncHandler(async (req, res) => {
     timeSlot,
     notes,
     reason,
-    symptoms
+    selectedSymptoms
   });
 
   return res.status(201).json(new ApiResponse(201, appointment, "Appointment booked successfully"));

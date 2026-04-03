@@ -49,15 +49,22 @@ export const registerUser = asyncHandler(async (req, res) => {
   }
 
   if (userRole === ROLES.DOCTOR) {
-    // In a real flow, a doctor must be linked to a hospital. We simulate this by linking them to the first available hospital or leaving it empty if none exists
-    const firstHospital = await Hospital.findOne();
-    if (firstHospital) {
-      await Doctor.create({
-        user: user._id,
-        hospital: firstHospital._id,
-        specialization: "General Physician"
-      });
+    // A doctor must be linked to a hospital. If none exists, generate a safe fallback clinic
+    let firstHospital = await Hospital.findOne();
+    
+    if (!firstHospital) {
+       firstHospital = await Hospital.create({
+         user: user._id, // fallback binding
+         registrationNumber: `HOSP-AUTO-${Date.now()}`,
+         facilityType: "Fallback Clinic"
+       });
     }
+
+    await Doctor.create({
+      user: user._id,
+      hospital: firstHospital._id,
+      specialization: "General Physician"
+    });
   }
 
   const createdUser = await User.findById(user._id).select("-password -refreshToken");

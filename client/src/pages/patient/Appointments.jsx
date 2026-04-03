@@ -20,7 +20,10 @@ export default function Appointments() {
   const [bDate, setBDate] = useState("");
   const [bTime, setBTime] = useState("");
   const [bReason, setBReason] = useState("");
-  const [bSymptoms, setBSymptoms] = useState("");
+
+  // Tracked Symptom mapping
+  const [trackedSymptoms, setTrackedSymptoms] = useState([]);
+  const [selectedSymptomIds, setSelectedSymptomIds] = useState([]);
 
   const { user } = useAuthStore();
 
@@ -38,6 +41,9 @@ export default function Appointments() {
         const res = await axios.get("/api/v1/appointments/user", { withCredentials: true });
         setMyAppointments(res.data.data);
       }
+      
+      const symRes = await axios.get("/api/v1/patient/symptoms", { withCredentials: true });
+      setTrackedSymptoms(symRes.data.data);
     } catch (err) {
       console.error(err);
     }
@@ -50,20 +56,30 @@ export default function Appointments() {
     setBDate("");
     setBTime("");
     setBReason("");
-    setBSymptoms("");
+    setSelectedSymptomIds([]);
     setShowModal(true);
   };
 
   const submitBooking = async (e) => {
     e.preventDefault();
     try {
+      // Map exact objects to safely proxy the backend requirements
+      const explicitSymptomsToLog = trackedSymptoms
+        .filter(s => selectedSymptomIds.includes(s._id))
+        .map(s => ({
+           symptomTitle: s.symptomTitle,
+           description: s.description,
+           severity: s.severity,
+           dateTime: s.dateTime
+        }));
+
       await axios.post("/api/v1/appointments", {
         doctorId: selectedDoctor._id,
         hospitalId: selectedDoctor.hospital._id,
         date: bDate,
         timeSlot: bTime,
         reason: bReason,
-        symptoms: bSymptoms ? bSymptoms.split(",") : []
+        selectedSymptoms: explicitSymptomsToLog
       }, { withCredentials: true });
 
       setBookingStep(3); // Success step
@@ -239,8 +255,30 @@ export default function Appointments() {
                     <input required type="text" placeholder="e.g. Fever, routine checkup" value={bReason} onChange={e => setBReason(e.target.value)} className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Symptoms (Optional)</label>
-                    <textarea placeholder="e.g. Headache, Nausea (comma separated)" value={bSymptoms} onChange={e => setBSymptoms(e.target.value)} rows="3" className="w-full px-4 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Import Tracked Symptoms</label>
+                    {trackedSymptoms.length === 0 ? (
+                      <p className="text-sm text-gray-500 italic p-3 bg-gray-50 rounded-lg">No active symptoms tracked on your profile to attach.</p>
+                    ) : (
+                      <div className="space-y-2 max-h-40 overflow-y-auto p-2 border border-blue-100 rounded-lg bg-blue-50/30">
+                        {trackedSymptoms.map(s => (
+                          <label key={s._id} className="flex items-start space-x-3 p-2 hover:bg-white rounded cursor-pointer border border-transparent hover:border-gray-200 transition-colors">
+                            <input 
+                              type="checkbox" 
+                              className="w-4 h-4 mt-0.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" 
+                              checked={selectedSymptomIds.includes(s._id)}
+                              onChange={(e) => {
+                                if(e.target.checked) setSelectedSymptomIds([...selectedSymptomIds, s._id]);
+                                else setSelectedSymptomIds(selectedSymptomIds.filter(id => id !== s._id));
+                              }}
+                            />
+                            <div>
+                              <p className="text-sm font-bold text-gray-900">{s.symptomTitle} <span className="text-xs font-normal text-red-500">[{s.severity}]</span></p>
+                              <p className="text-xs text-gray-500 line-clamp-1">{s.description || "No description provided."}</p>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div className="flex space-x-3 pt-4">
                     <button type="button" onClick={() => setBookingStep(1)} className="w-1/3 py-3 border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors">Back</button>
