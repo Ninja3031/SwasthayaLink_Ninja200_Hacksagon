@@ -15,7 +15,7 @@ const prescriptionSchema = new mongoose.Schema(
     hospital: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Hospital",
-      required: true,
+      required: false,
     },
     appointment: {
       type: mongoose.Schema.Types.ObjectId,

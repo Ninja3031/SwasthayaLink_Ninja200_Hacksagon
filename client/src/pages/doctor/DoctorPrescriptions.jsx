@@ -48,8 +48,10 @@ export default function DoctorPrescriptions() {
 
       setSubmitting(true);
       try {
+         const appt = appointments.find(a => a._id === selectedAppointment);
          await axios.post("/api/v1/prescriptions", {
             appointmentId: selectedAppointment,
+            hospital: appt?.hospital,
             medicines
          }, { withCredentials: true });
          

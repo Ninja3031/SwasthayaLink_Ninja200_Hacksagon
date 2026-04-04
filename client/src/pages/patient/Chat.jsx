@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import useAuthStore from "../../store/useAuthStore";
-import { Send, UserCheck, CheckCircle } from "lucide-react";
+import { Send, UserCheck, CheckCircle, Video } from "lucide-react";
+import { io } from "socket.io-client";
+import VideoCallModal from "../../components/VideoCallModal";
 
 export default function Chat() {
   const { user } = useAuthStore();
@@ -9,11 +11,25 @@ export default function Chat() {
   const [activeContact, setActiveContact] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [socket, setSocket] = useState(null);
+  const [callingTarget, setCallingTarget] = useState(null);
   const endRef = useRef(null);
 
   useEffect(() => {
     fetchConversations();
-  }, []);
+
+    // Mount Real-Time Websocket for Patient
+    const socketInstance = io(import.meta.env.VITE_API_URL || "http://localhost:8000", {
+        query: { userId: user._id }
+    });
+    setSocket(socketInstance);
+
+    socketInstance.on("receive_message", (msg) => {
+        setMessages(prev => [...prev, msg]);
+    });
+
+    return () => socketInstance.disconnect();
+  }, [user._id]);
 
   useEffect(() => {
     if (activeContact) fetchChat(activeContact._id);
@@ -104,8 +120,12 @@ export default function Chat() {
           <>
             <div className="h-16 bg-white border-b border-gray-100 flex items-center px-6 shadow-sm z-10 space-x-3">
                <UserCheck className="w-5 h-5 text-blue-600" />
-               <h3 className="font-bold text-lg">{activeContact.name}</h3>
-               <span className="text-sm bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Verified Node</span>
+               <h3 className="font-bold text-lg flex-1">{activeContact.name}</h3>
+               <button onClick={() => setCallingTarget(activeContact._id)} className="p-2 bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 rounded-xl transition-all shadow-sm flex items-center group">
+                  <Video className="w-5 h-5 group-hover:scale-110 transition-transform"/>
+                  <span className="ml-2 font-black text-sm uppercase tracking-widest hidden lg:block">Video Connect</span>
+               </button>
+               <span className="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full font-bold ml-2">Verified Node</span>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
@@ -158,6 +178,14 @@ export default function Chat() {
           </div>
         )}
       </div>
+
+      <VideoCallModal 
+          socket={socket} 
+          currentUser={user} 
+          activeContact={activeContact} 
+          callingTarget={callingTarget} 
+          setCallingTarget={setCallingTarget} 
+      />
     </div>
   );
 }

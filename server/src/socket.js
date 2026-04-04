@@ -40,6 +40,47 @@ io.on("connection", (socket) => {
        }
    });
 
+   // WebRTC Video Call Signaling Handlers
+   socket.on("call-user", (data) => {
+       const { userToCall, signalData, from, callerName } = data;
+       const recipientSocket = userSocketMap[userToCall];
+       if (recipientSocket) {
+           io.to(recipientSocket).emit("receive-call", { signal: signalData, from, callerName });
+       }
+   });
+
+   socket.on("accept-call", (data) => {
+       const { to, signal } = data;
+       const recipientSocket = userSocketMap[to];
+       if (recipientSocket) {
+           io.to(recipientSocket).emit("call-accepted", signal);
+       }
+   });
+
+   socket.on("reject-call", (data) => {
+       const { to } = data;
+       const recipientSocket = userSocketMap[to];
+       if (recipientSocket) {
+           io.to(recipientSocket).emit("call-rejected");
+       }
+   });
+
+   socket.on("end-call", (data) => {
+       const { to } = data;
+       const recipientSocket = userSocketMap[to];
+       if (recipientSocket) {
+           io.to(recipientSocket).emit("call-ended");
+       }
+   });
+
+   socket.on("ice-candidate", (data) => {
+       const { to, candidate } = data;
+       const recipientSocket = userSocketMap[to];
+       if (recipientSocket) {
+           io.to(recipientSocket).emit("ice-candidate", candidate);
+       }
+   });
+
    socket.on("disconnect", () => {
        if (userId) delete userSocketMap[userId];
        console.log("Real-time Gateway closed: ", socket.id);

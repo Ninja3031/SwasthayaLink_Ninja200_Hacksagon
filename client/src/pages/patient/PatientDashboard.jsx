@@ -1,9 +1,29 @@
 import { Activity, Calendar as CalendarIcon, FileText, Search } from "lucide-react";
 import useAuthStore from "../../store/useAuthStore";
 import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 export default function PatientDashboard() {
   const { user } = useAuthStore();
+  const [appointments, setAppointments] = useState([]);
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const res = await axios.get("/api/v1/appointments/user", { withCredentials: true });
+        setAppointments(res.data.data || []);
+      } catch (error) {
+        console.error("Failed fetching patient appointments", error);
+      }
+    };
+    fetchAppointments();
+  }, []);
+
+  const upcomingAppointments = appointments
+     .filter(a => new Date(a.date) >= new Date(new Date().setHours(0,0,0,0)) && a.status !== 'cancelled')
+     .sort((a,b) => new Date(a.date) - new Date(b.date))
+     .slice(0, 5); // Only show immediate 5
 
   const actions = [
     { title: "Find a Hospital", link: "/patient/search", icon: Search, color: "bg-blue-100 text-blue-600" },
@@ -40,16 +60,23 @@ export default function PatientDashboard() {
             Upcoming Appointments
           </h2>
           <div className="space-y-4">
-               <div className="p-4 rounded-xl border border-gray-100 bg-gray-50 flex justify-between items-center">
-                 <div>
-                   <p className="font-semibold text-gray-900">Dr. Sarah Jenkins</p>
-                   <p className="text-sm text-gray-500">General Checkup - City Care Hospital</p>
-                 </div>
-                 <div className="text-right">
-                   <p className="text-blue-600 font-bold bg-blue-100 px-3 py-1 rounded-full text-sm inline-block">Tomorrow, 10:00 AM</p>
-                 </div>
-               </div>
-               <div className="p-4 text-center text-gray-500 text-sm">No other upcoming appointments!</div>
+               {upcomingAppointments.length === 0 ? (
+                  <div className="p-4 text-center text-gray-500 text-sm">No upcoming appointments scheduled yet!</div>
+               ) : (
+                  upcomingAppointments.map((apt, idx) => (
+                    <div key={apt._id || idx} className="p-4 rounded-xl border border-gray-100 bg-gray-50 flex justify-between items-center transition-all hover:bg-white hover:shadow-sm">
+                      <div>
+                        <p className="font-semibold text-gray-900">Dr. {apt.doctorDetailsSnapshot?.name || apt.doctor?.name || "Unmapped Doctor"}</p>
+                        <p className="text-sm text-gray-500">{apt.type || apt.reason} - {apt.doctorDetailsSnapshot?.hospitalName || apt.hospital?.name || "Virtual"}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-blue-600 font-bold bg-blue-100 px-3 py-1 rounded-full text-sm inline-block">
+                           {new Date(apt.date).toLocaleDateString()} {apt.timeSlot ? `, ${apt.timeSlot}` : ''}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+               )}
           </div>
         </div>
 

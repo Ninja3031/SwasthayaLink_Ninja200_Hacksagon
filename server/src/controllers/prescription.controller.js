@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { Prescription } from "../models/Prescription.js";
 import { Appointment } from "../models/Appointment.js";
+import { Hospital } from "../models/Hospital.js";
 
 // @route POST /api/v1/prescriptions
 // @desc Create a prescription securely matching Doctor <-> Patient appointment bounds
@@ -28,10 +29,19 @@ export const createPrescription = asyncHandler(async (req, res) => {
     throw new ApiError(403, "Access Violation. Strictly mapped securely only for registered bounds.");
   }
 
+  let targetHospital = req.body.hospital || req.user.hospital || appointmentTrace.hospital;
+
+  if (!targetHospital && req.user.hospitalName) {
+      const hospitalDoc = await Hospital.findOne({ name: req.user.hospitalName });
+      if (hospitalDoc) {
+          targetHospital = hospitalDoc._id;
+      }
+  }
+
   const prescription = await Prescription.create({
      doctor: req.user._id,
      patient: appointmentTrace.patient,
-     hospital: appointmentTrace.hospital, // Can be undefined implicitly based on optional constraint
+     hospital: targetHospital,
      appointment: appointmentId,
      medicines,
      notes
