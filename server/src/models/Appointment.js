@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import { PREDEFINED_HOSPITALS } from "../constants/hospitals.js";
 
 const appointmentSchema = new Schema(
   {
@@ -13,14 +14,14 @@ const appointmentSchema = new Schema(
       required: true,
     },
     doctorDetailsSnapshot: {
-       name: String,
-       speciality: String,
-       hospitalName: String
+      name: String,
+      speciality: String,
+      hospital: String
     },
     hospital: {
-      type: Schema.Types.ObjectId,
-      ref: "Hospital",
-      required: false,
+      type: String,
+      enum: PREDEFINED_HOSPITALS,
+      required: true,
     },
     date: {
       type: Date,

@@ -21,6 +21,8 @@ import DoctorLabResults from "./pages/doctor/DoctorLabResults";
 import DoctorChat from "./pages/doctor/DoctorChat";
 import DoctorPrescriptions from "./pages/doctor/DoctorPrescriptions";
 import EmergencyAlerts from "./pages/hospital/EmergencyAlerts";
+import HospitalDoctors from "./pages/hospital/HospitalDoctors";
+import HospitalAppointments from "./pages/hospital/HospitalAppointments";
 
 import ClaimNew from "./pages/patient/ClaimNew";
 import ClaimCheck from "./pages/patient/ClaimCheck";
@@ -77,8 +79,8 @@ function App() {
         {/* Hospital Routes */}
         <Route path="/hospital" element={<ProtectedRoute allowedRoles={["hospital"]}><HospitalLayout /></ProtectedRoute>}>
           <Route path="dashboard" element={<HospitalDashboard />} />
-          <Route path="doctors" element={<div className="p-8 text-center text-gray-500 font-semibold bg-white rounded-xl shadow-sm border border-gray-100">Manage Doctors Placeholder...</div>} />
-          <Route path="appointments" element={<div className="p-8 text-center text-gray-500 font-semibold bg-white rounded-xl shadow-sm border border-gray-100">Manage Appointments Placeholder...</div>} />
+          <Route path="doctors" element={<HospitalDoctors />} />
+          <Route path="appointments" element={<HospitalAppointments />} />
           <Route path="sos" element={<EmergencyAlerts />} />
         </Route>
 

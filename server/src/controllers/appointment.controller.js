@@ -12,7 +12,7 @@ import { Symptom } from "../models/Symptom.js";
 // @desc Book an appointment (Patient Portal)
 export const bookAppointment = asyncHandler(async (req, res) => {
   const { doctorId, date, time, type, hospital, specialty, includeSymptoms, notes } = req.body;
-  
+
   if (!doctorId || !date || !time || !type) throw new ApiError(400, "Validation hook failed missing required components.");
 
   // Generate Doctor Execution Block dynamically mapping limits
@@ -22,37 +22,19 @@ export const bookAppointment = asyncHandler(async (req, res) => {
   // If includeSymptoms bounds true, query directly
   let pulledSymptoms = [];
   if (includeSymptoms) {
-      pulledSymptoms = await Symptom.find({ patient: req.user._id }).sort("-dateTime").limit(5).lean();
-  }
-  
-  console.log("Incoming Appointment Body:", req.body);
-  
-  let resolvedHospitalId = hospital;
-  
-  if (!resolvedHospitalId && targetDoctor.hospitalName) {
-      resolvedHospitalId = targetDoctor.hospitalName;
+    pulledSymptoms = await Symptom.find({ patient: req.user._id }).sort("-dateTime").limit(5).lean();
   }
 
-  if (resolvedHospitalId && !mongoose.Types.ObjectId.isValid(resolvedHospitalId)) {
-      // Fuzzy trace map across unconstrained constraints natively
-      const mappedHosp = await Hospital.findOne({ name: { $regex: new RegExp(resolvedHospitalId, 'i') } });
-      if (mappedHosp) {
-          resolvedHospitalId = mappedHosp._id;
-      } else {
-          resolvedHospitalId = undefined; // Drop natively to prevent BSON ObjectId CastError
-      }
-  } else if (!resolvedHospitalId) {
-      resolvedHospitalId = undefined;
-  }
+  console.log("Incoming Appointment Body:", req.body);
 
   const appointment = await Appointment.create({
     patient: req.user._id,
     doctor: doctorId,
-    hospital: resolvedHospitalId, 
+    hospital: targetDoctor.hospital, // Force strict mapping natively
     doctorDetailsSnapshot: {
        name: targetDoctor.name,
        speciality: targetDoctor.speciality,
-       hospitalName: targetDoctor.hospitalName
+       hospital: targetDoctor.hospital
     },
     date,
     timeSlot: time,

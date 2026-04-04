@@ -15,6 +15,7 @@ export default function HospitalLayout() {
     { name: "Hospital Dashboard", link: "/hospital/dashboard", icon: Building2 },
     { name: "Manage Doctors", link: "/hospital/doctors", icon: Users },
     { name: "All Appointments", link: "/hospital/appointments", icon: Calendar },
+    { name: "Emergency SOS", link: "/hospital/sos", icon: Activity },
   ];
 
   return (

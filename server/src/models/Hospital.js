@@ -2,11 +2,13 @@ import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { ROLES } from "../constants/roles.js";
+import { PREDEFINED_HOSPITALS } from "../constants/hospitals.js";
 
 const hospitalSchema = new Schema(
   {
     name: {
       type: String,
+      enum: PREDEFINED_HOSPITALS,
       required: true,
       trim: true,
     },
@@ -40,7 +42,7 @@ const hospitalSchema = new Schema(
 
 hospitalSchema.pre("save", async function () {
   if (this.isModified("password")) {
-     this.password = await bcrypt.hash(this.password, 10);
+    this.password = await bcrypt.hash(this.password, 10);
   }
 });
 

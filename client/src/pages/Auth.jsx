@@ -4,10 +4,18 @@ import { useNavigate } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore";
 import axios from "axios";
 
+const PREDEFINED_HOSPITALS = [
+  "Apollo Hospital",
+  "AIIMS",
+  "Fortis Hospital",
+  "Max Healthcare",
+  "Manipal Hospital"
+];
+
 export default function Auth() {
   const [selectedRole, setSelectedRole] = useState(null);
   const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({ name: "", email: "", password: "", phone: "", hospitalName: "", experience: "", speciality: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", password: "", phone: "", hospital: "", experience: "", speciality: "" });
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const { login, isAuthenticated, user } = useAuthStore();
@@ -45,7 +53,7 @@ export default function Auth() {
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Welcome to SwasthyaLink</h1>
             <p className="text-lg text-gray-600">Select your portal to continue</p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <button onClick={() => handleRoleSelection("patient")} className="group relative bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:border-blue-500 transition-all text-center">
               <div className="mx-auto w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
@@ -85,59 +93,66 @@ export default function Auth() {
           </button>
           <h2 className="text-xl font-semibold flex items-center capitalize">{selectedRole} {isLogin ? "Sign In" : "Sign Up"}</h2>
         </div>
-        
+
         <form onSubmit={handleAuth} className="p-8 space-y-6">
           {error && <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm">{error}</div>}
-          
+
           {!isLogin && (
             <div className="space-y-4">
-               {["patient", "doctor"].includes(selectedRole) && (
-                 <div>
-                   <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                   <input required type="text" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="First Last" onChange={e => setFormData({...formData, name: e.target.value})}/>
-                 </div>
-               )}
-               {selectedRole === "hospital" && (
-                 <div>
-                   <label className="block text-sm font-medium text-gray-700 mb-1">Hospital Name</label>
-                   <input required type="text" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="General Hospital" onChange={e => setFormData({...formData, name: e.target.value})}/>
-                 </div>
-               )}
-               {["patient", "doctor"].includes(selectedRole) && (
-                 <div>
-                   <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                   <input required type="tel" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="+12 3456789" onChange={e => setFormData({...formData, phone: e.target.value})}/>
-                 </div>
-               )}
-               {selectedRole === "doctor" && (
-                 <>
-                   <div>
-                     <label className="block text-sm font-medium text-gray-700 mb-1">Target Base Hospital</label>
-                     <input required type="text" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="E.g. Apollo Hospital" onChange={e => setFormData({...formData, hospitalName: e.target.value})}/>
-                   </div>
-                   <div className="flex gap-4">
-                       <div className="flex-1">
-                         <label className="block text-sm font-medium text-gray-700 mb-1">Primary Speciality</label>
-                         <input required type="text" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Cardiology" onChange={e => setFormData({...formData, speciality: e.target.value})}/>
-                       </div>
-                       <div className="w-32">
-                         <label className="block text-sm font-medium text-gray-700 mb-1">Experience (Yrs)</label>
-                         <input required type="number" min="0" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="5" onChange={e => setFormData({...formData, experience: e.target.value})}/>
-                       </div>
-                   </div>
-                 </>
-               )}
+              {["patient", "doctor"].includes(selectedRole) && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <input required type="text" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="First Last" onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                </div>
+              )}
+              {["patient", "doctor"].includes(selectedRole) && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                  <input required type="tel" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="+12 3456789" onChange={e => setFormData({ ...formData, phone: e.target.value })} />
+                </div>
+              )}
+              {selectedRole === "doctor" && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Target Base Hospital</label>
+                    <select required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" onChange={e => setFormData({ ...formData, hospital: e.target.value })} defaultValue="">
+                      <option value="" disabled>Select Hospital Boundary</option>
+                      {PREDEFINED_HOSPITALS.map(h => <option key={h} value={h}>{h}</option>)}
+                    </select>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Primary Speciality</label>
+                      <input required type="text" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Cardiology" onChange={e => setFormData({ ...formData, speciality: e.target.value })} />
+                    </div>
+                    <div className="w-32">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Experience (Yrs)</label>
+                      <input required type="number" min="0" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="5" onChange={e => setFormData({ ...formData, experience: e.target.value })} />
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
+          {selectedRole === "hospital" && (
+             <div>
+               <label className="block text-sm font-medium text-gray-700 mb-1">Hospital Identity Selection</label>
+               <select required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" onChange={e => setFormData({ ...formData, name: e.target.value })} defaultValue="">
+                  <option value="" disabled>Select Mapped Hospital</option>
+                  {PREDEFINED_HOSPITALS.map(h => <option key={h} value={h}>{h}</option>)}
+               </select>
+             </div>
+          )}
+
           <div>
-             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-             <input required type="email" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="you@domain.com" onChange={e => setFormData({...formData, email: e.target.value})}/>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input required type="email" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="you@domain.com" onChange={e => setFormData({ ...formData, email: e.target.value })} />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input required type="password" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="••••••••" onChange={e => setFormData({...formData, password: e.target.value})}/>
+            <input required type="password" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="••••••••" onChange={e => setFormData({ ...formData, password: e.target.value })} />
           </div>
 
           <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
