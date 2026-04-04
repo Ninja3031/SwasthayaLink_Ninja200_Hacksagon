@@ -21,6 +21,7 @@ export default function PatientLayout() {
     { name: "Lab Results", link: "/patient/lab-results", icon: TestTube },
     { name: "Messaging", link: "/patient/chat", icon: MessageCircle },
     { name: "Emergency SOS", link: "/patient/sos", icon: AlertOctagon },
+    { name: "Mediclaim", link: "/patient/claims/new", icon: Activity },
   ];
 
   return (

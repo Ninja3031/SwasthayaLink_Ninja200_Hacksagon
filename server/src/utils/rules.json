@@ -1,0 +1,26 @@
+{
+  "Appendicitis": {
+    "maxAmount": 50000,
+    "requiredDocs": ["prescription", "lab_report"]
+  },
+  "Kidney Stone": {
+    "maxAmount": 60000,
+    "requiredDocs": ["prescription", "lab_report", "bill"]
+  },
+  "Fracture": {
+    "maxAmount": 80000,
+    "requiredDocs": ["prescription", "bill", "id_proof"]
+  },
+  "Fever / Viral": {
+    "maxAmount": 15000,
+    "requiredDocs": ["prescription", "bill"]
+  },
+  "Cataract": {
+    "maxAmount": 40000,
+    "requiredDocs": ["prescription", "id_proof"]
+  },
+  "Maternity": {
+    "maxAmount": 100000,
+    "requiredDocs": ["prescription", "lab_report", "bill", "id_proof"]
+  }
+}

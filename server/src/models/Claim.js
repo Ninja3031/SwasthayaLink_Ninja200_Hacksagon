@@ -7,33 +7,36 @@ const claimSchema = new Schema(
       ref: "User",
       required: true,
     },
+    disease: {
+      type: String,
+      required: true,
+    },
     hospital: {
-      type: Schema.Types.ObjectId,
-      ref: "Hospital",
+      type: String,
       required: true,
     },
-    insurance: {
-      type: Schema.Types.ObjectId,
-      ref: "Insurance",
-      required: true,
-    },
-    claimAmount: {
+    amount: {
       type: Number,
       required: true,
     },
+    documents: [{
+      type: String,
+      enum: ["prescription", "lab_report", "bill", "id_proof"],
+    }],
     status: {
       type: String,
-      enum: ["submitted", "under_review", "approved", "rejected"],
-      default: "submitted",
+      enum: ["SUBMITTED", "UNDER_REVIEW", "APPROVED", "SETTLED", "REJECTED"],
+      default: "SUBMITTED",
     },
-    documents: [
-      {
-        url: String,
-        name: String,
-      }
-    ],
-    remarks: {
+    score: {
+      type: Number,
+      required: true,
+      default: 0
+    },
+    approvalChance: {
       type: String,
+      enum: ["HIGH", "MEDIUM", "LOW"],
+      default: "LOW"
     }
   },
   { timestamps: true }

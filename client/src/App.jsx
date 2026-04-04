@@ -19,6 +19,10 @@ import DoctorLabResults from "./pages/doctor/DoctorLabResults";
 import DoctorChat from "./pages/doctor/DoctorChat";
 import EmergencyAlerts from "./pages/hospital/EmergencyAlerts";
 
+import ClaimNew from "./pages/patient/ClaimNew";
+import ClaimCheck from "./pages/patient/ClaimCheck";
+import ClaimTracker from "./pages/patient/ClaimTracker";
+
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { isAuthenticated, user } = useAuthStore();
 
@@ -52,6 +56,9 @@ function App() {
           <Route path="lab-results" element={<LabResults />} />
           <Route path="chat" element={<Chat />} />
           <Route path="sos" element={<EmergencySOS />} />
+          <Route path="claims/new" element={<ClaimNew />} />
+          <Route path="claims/check" element={<ClaimCheck />} />
+          <Route path="claims/:id" element={<ClaimTracker />} />
         </Route>
 
         {/* Doctor Routes */}

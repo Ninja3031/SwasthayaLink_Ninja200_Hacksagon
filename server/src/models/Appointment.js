@@ -25,6 +25,15 @@ const appointmentSchema = new Schema(
       type: String,
       required: true,
     },
+    type: {
+      type: String,
+      enum: ["Consultation", "Follow-up", "Emergency"],
+      required: true,
+      default: "Consultation"
+    },
+    specialty: {
+      type: String
+    },
     status: {
       type: String,
       enum: ["pending", "confirmed", "completed", "cancelled"],

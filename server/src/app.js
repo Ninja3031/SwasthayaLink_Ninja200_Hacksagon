@@ -28,6 +28,7 @@ import patientRoutes from './routes/patient.routes.js';
 import labResultRoutes from './routes/lab-results.routes.js';
 import emergencyRoutes from './routes/emergency.routes.js';
 import messageRoutes from './routes/messages.routes.js';
+import claimRoutes from './routes/claim.routes.js';
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/hospitals", hospitalRoutes);
@@ -36,6 +37,7 @@ app.use("/api/v1/appointments", appointmentRoutes);
 app.use("/api/v1/lab-results", labResultRoutes);
 app.use("/api/v1/emergency", emergencyRoutes);
 app.use("/api/v1/messages", messageRoutes);
+app.use("/api/v1/claims", claimRoutes);
 app.use("/api/medicines", medicineRoutes);
 app.use("/api/v1/patient", patientRoutes);
 

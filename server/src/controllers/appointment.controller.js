@@ -5,20 +5,32 @@ import { Doctor } from "../models/Doctor.js";
 import { Hospital } from "../models/Hospital.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 
+import { Symptom } from "../models/Symptom.js";
+
 // @route POST /api/v1/appointments
 // @desc Book an appointment (Patient Portal)
 export const bookAppointment = asyncHandler(async (req, res) => {
-  const { doctorId, hospitalId, date, timeSlot, notes, reason, selectedSymptoms } = req.body;
+  const { doctorId, date, time, type, hospital, specialty, includeSymptoms, notes } = req.body;
+  
+  if (!doctorId || !date || !time || !type) throw new ApiError(400, "Validation hook failed missing required components.");
+
+  // If includeSymptoms bounds true, query directly
+  let pulledSymptoms = [];
+  if (includeSymptoms) {
+      pulledSymptoms = await Symptom.find({ patient: req.user._id }).sort("-dateTime").limit(5).lean();
+  }
   
   const appointment = await Appointment.create({
     patient: req.user._id,
     doctor: doctorId,
-    hospital: hospitalId,
+    hospital: hospital, 
     date,
-    timeSlot,
+    timeSlot: time,
+    type,
+    specialty,
     notes,
-    reason,
-    selectedSymptoms
+    reason: "Booked via UI",
+    selectedSymptoms: includeSymptoms ? pulledSymptoms : []
   });
 
   return res.status(201).json(new ApiResponse(201, appointment, "Appointment booked successfully"));
