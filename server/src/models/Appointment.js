@@ -32,7 +32,20 @@ const appointmentSchema = new Schema(
     },
     notes: {
       type: String,
-    }
+    },
+    reason: {
+      type: String,
+      required: true,
+      default: "General Checkup"
+    },
+    selectedSymptoms: [
+      {
+        symptomTitle: String,
+        description: String,
+        severity: String,
+        dateTime: Date
+      }
+    ]
   },
   { timestamps: true }
 );

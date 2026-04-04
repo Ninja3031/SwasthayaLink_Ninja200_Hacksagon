@@ -23,7 +23,7 @@ router.route("/doctor").get(authorizeRoles(ROLES.DOCTOR), getDoctorAppointments)
 // Hospital routes
 router.route("/hospital").get(authorizeRoles(ROLES.HOSPITAL), getHospitalAppointments);
 
-// Shared update status (Doctor or Hospital)
-router.route("/:id/status").patch(authorizeRoles(ROLES.DOCTOR, ROLES.HOSPITAL), updateAppointmentStatus);
+// Shared update status (Patient, Doctor, or Hospital)
+router.route("/:id/status").patch(authorizeRoles(ROLES.PATIENT, ROLES.DOCTOR, ROLES.HOSPITAL), updateAppointmentStatus);
 
 export default router;
