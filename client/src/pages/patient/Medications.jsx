@@ -86,24 +86,24 @@ export default function Medications() {
                <div className="text-amber-600 flex items-center"><AlertTriangle className="w-5 h-5 mr-2"/> {manualResults.error}</div>
              ) : (
                <div>
-                  <h3 className="font-bold text-gray-900 mb-2">Mapped Generic: <span className="text-blue-600">{manualResults.generic}</span></h3>
-                  <div className="divide-y divide-gray-100">
-                    {manualResults.alternatives.map((alt, i) => (
-                      <div key={i} className="py-3 flex justify-between items-center">
-                         <div>
-                            <p className="font-bold text-green-700">{alt.name}</p>
-                            <p className="text-sm text-gray-500">{alt.manufacturer}</p>
-                         </div>
-                         <div className="text-right">
-                           {alt.price ? (
-                              <span className="bg-green-100 text-green-800 font-bold px-3 py-1 rounded-full text-lg">₹{alt.price}</span>
-                           ) : (
-                              <span className="text-xs text-gray-400">Price Var.</span>
-                           )}
-                         </div>
-                      </div>
-                    ))}
-                  </div>
+                  <h3 className="font-bold text-gray-900 mb-2">Target Match: <span className="text-blue-600">{manualResults.searchedDrug}</span></h3>
+                  <p className="text-sm text-gray-600 mb-3 font-mono bg-gray-50 p-2 rounded">Composition: {manualResults.genericComposition}</p>
+                  
+                  {manualResults.cheapestAlternative ? (
+                     <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex justify-between items-center shadow-sm">
+                        <div>
+                           <p className="text-xs font-bold text-green-700 uppercase tracking-widest mb-1 flex items-center"><DollarSign className="w-4 h-4 mr-1"/> Lowest Jan Aushadhi Generic</p>
+                           <p className="font-bold text-gray-900 text-lg">{manualResults.cheapestAlternative.name}</p>
+                           <p className="text-sm text-gray-500">{manualResults.cheapestAlternative.manufacturer}</p>
+                        </div>
+                        <div className="text-right">
+                           <span className="bg-green-600 text-white font-black px-4 py-2 rounded-full text-xl shadow-lg">₹{manualResults.cheapestAlternative.price}</span>
+                        </div>
+                     </div>
+                  ) : (
+                     <p className="text-sm text-gray-500 italic">No cost structure found.</p>
+                  )}
+                  <p className="text-xs text-blue-800 mt-3">{manualResults.note}</p>
                </div>
              )}
            </div>
@@ -181,25 +181,24 @@ export default function Medications() {
                                <p className="text-center text-gray-500 text-sm italic">Scanning Jan Aushadhi database...</p>
                              ) : alternativesData?.error ? (
                                <p className="text-amber-600 text-sm font-medium p-3 bg-amber-50 rounded-lg">{alternativesData.error}</p>
-                             ) : alternativesData?.alternatives && alternativesData.alternatives.length > 0 ? (
+                             ) : alternativesData?.cheapestAlternative ? (
                                <div className="bg-green-50 p-4 rounded-xl border border-green-100">
                                   <p className="text-xs font-bold uppercase tracking-wider text-green-800 mb-3">Govt. Verified Alternatives</p>
-                                  <p className="text-sm text-gray-600 mb-3"><span className="font-semibold text-gray-900">Generic Formula:</span> {alternativesData.generic}</p>
+                                  <p className="text-sm text-gray-600 mb-3"><span className="font-semibold text-gray-900">Generic Formula:</span> {alternativesData.genericComposition}</p>
                                   
                                   <div className="space-y-2">
-                                     {alternativesData.alternatives.map((alt, i) => (
-                                        <div key={i} className="flex justify-between items-center bg-white p-3 rounded-lg border border-green-200">
+                                        <div className="flex justify-between items-center bg-white p-3 rounded-lg border-2 border-green-400 shadow-sm">
                                            <div>
-                                             <p className="font-bold text-gray-900">{alt.name}</p>
-                                             <p className="text-xs text-gray-500">{alt.manufacturer}</p>
+                                             <div className="text-[10px] font-black text-white bg-green-500 px-2 py-0.5 rounded uppercase tracking-wider inline-block mb-1">Cheapest Available</div>
+                                             <p className="font-bold text-gray-900">{alternativesData.cheapestAlternative.name}</p>
+                                             <p className="text-xs text-gray-500">{alternativesData.cheapestAlternative.manufacturer}</p>
                                            </div>
-                                           <div className="text-right">
-                                             <span className="text-green-700 font-bold bg-green-100 px-3 py-1 rounded-full flex items-center">
-                                                <DollarSign className="w-4 h-4 -ml-1 mr-1" /> {alt.price || "Contact Chemist"}
+                                           <div className="text-right flex flex-col items-end">
+                                             <span className="text-green-800 font-black bg-green-100 px-3 py-1 rounded-full text-lg shadow-sm">
+                                                 ₹{alternativesData.cheapestAlternative.price}
                                              </span>
                                            </div>
                                         </div>
-                                     ))}
                                   </div>
                                   <p className="text-xs text-green-800 mt-3 pt-3 border-t border-green-200">{alternativesData.note}</p>
                                </div>

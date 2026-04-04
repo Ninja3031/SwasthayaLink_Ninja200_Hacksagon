@@ -42,11 +42,6 @@ router.route("/orders").post(placeOrder);
 router.route("/symptoms").get(getSymptomsHistory).post(logSymptoms);
 router.route("/symptoms/:id").put(updateSymptom).delete(deleteSymptom);
 
-// Messages
-router.route("/messages/:contactId").get(getMessages);
-router.route("/messages/send").post(sendMessage);
-
-// SOS
-router.route("/sos/trigger").post(triggerSOS);
+// Deprecated natively: Replaced by dedicated Emergency and Messaging Routes Modules
 
 export default router;

@@ -1,26 +1,39 @@
-import { BrandMap } from "../models/BrandMap.js";
 import { Medicine } from "../models/Medicine.js";
 
-export const findAlternatives = async (brandName) => {
-  const mapping = await BrandMap.findOne({
-    brandName: { $regex: brandName, $options: "i" }
+export const findAlternatives = async (queryParam) => {
+  if (!queryParam) return { error: "Query parameter string is absolutely required." };
+
+  // Fuzzy regex match: Split by space to get root root compound name (e.g. 'Azithromycin' instead of 'Azithromycin 500mg')
+  const rootQuery = queryParam.split(/\s+/)[0].replace(/mg|ml/i, "");
+  const searchMask = new RegExp(rootQuery, "i");
+  
+  // Locate payload where any of the central identifiers map to the query
+  const targetMedicine = await Medicine.findOne({
+     $or: [
+        { brand_name: searchMask },
+        { generic_name: searchMask },
+        { composition: searchMask }
+     ]
   });
 
-  if (!mapping) {
-    return { error: "No generic mapping found" };
+  if (!targetMedicine) {
+    return { error: "No recognized pharmaceutical directory matches this constraint." };
   }
 
-  const alternatives = await Medicine.find({
-    composition: { $regex: mapping.generic, $options: "i" }
-  });
+  // Cost mapping: Sort the native Jan Aushadhi generic array to find the single cheapest unit.
+  let cheapestAlternative = null;
+  if (targetMedicine.jan_aushadhi && targetMedicine.jan_aushadhi.length > 0) {
+      cheapestAlternative = targetMedicine.jan_aushadhi.reduce((minItem, currentItem) => {
+          return currentItem.price < minItem.price ? currentItem : minItem;
+      }, targetMedicine.jan_aushadhi[0]);
+  }
 
   return {
-      generic: mapping.generic,
-        alternatives: alternatives.map((med) => ({
-        name: med.name,
-        price: med.price,
-        manufacturer: med.manufacturer
-    })),
-    note: "Consult your doctor before switching medicines"
+      searchedDrug: targetMedicine.brand_name,
+      genericComposition: targetMedicine.composition,
+      categoryLock: targetMedicine.category,
+      cheapestAlternative: cheapestAlternative,
+      allAlternativesList: targetMedicine.jan_aushadhi,
+      note: "SwasthyaLink dynamically sorts Jan Aushadhi algorithms directly matching exact chemical structures."
     };
 };

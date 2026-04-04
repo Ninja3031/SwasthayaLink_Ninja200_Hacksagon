@@ -30,6 +30,17 @@ const userSchema = new Schema(
     contactNumber: {
       type: String,
     },
+    emergencyContacts: [
+      {
+        name: String,
+        phone: String
+      }
+    ],
+    // Tracks geographical lat/lng for SOS dispatcher
+    location: {
+      lat: Number,
+      lng: Number
+    },
     refreshToken: {
       type: String,
     },

@@ -15,6 +15,9 @@ import SymptomTracker from "./pages/patient/SymptomTracker";
 import LabResults from "./pages/patient/LabResults";
 import EmergencySOS from "./pages/patient/EmergencySOS";
 import Chat from "./pages/patient/Chat";
+import DoctorLabResults from "./pages/doctor/DoctorLabResults";
+import DoctorChat from "./pages/doctor/DoctorChat";
+import EmergencyAlerts from "./pages/hospital/EmergencyAlerts";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { isAuthenticated, user } = useAuthStore();
@@ -24,6 +27,8 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
   return children;
 };
+
+
 
 function App() {
   const { isAuthenticated, user } = useAuthStore();
@@ -54,6 +59,8 @@ function App() {
           <Route path="dashboard" element={<DoctorDashboard />} />
           <Route path="appointments" element={<div className="p-8 text-center text-gray-500 font-semibold bg-white rounded-xl shadow-sm border border-gray-100">Doctor Appointments Placeholder...</div>} />
           <Route path="availability" element={<div className="p-8 text-center text-gray-500 font-semibold bg-white rounded-xl shadow-sm border border-gray-100">Doctor Availability Placeholder...</div>} />
+          <Route path="lab-results" element={<DoctorLabResults />} />
+          <Route path="chat" element={<DoctorChat />} />
         </Route>
 
         {/* Hospital Routes */}
@@ -61,6 +68,7 @@ function App() {
           <Route path="dashboard" element={<HospitalDashboard />} />
           <Route path="doctors" element={<div className="p-8 text-center text-gray-500 font-semibold bg-white rounded-xl shadow-sm border border-gray-100">Manage Doctors Placeholder...</div>} />
           <Route path="appointments" element={<div className="p-8 text-center text-gray-500 font-semibold bg-white rounded-xl shadow-sm border border-gray-100">Manage Appointments Placeholder...</div>} />
+          <Route path="sos" element={<EmergencyAlerts />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
