@@ -1,31 +1,31 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-const recordSchema = new mongoose.Schema(
+const recordSchema = new Schema(
   {
     patient: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
-    },
-    doctor: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Doctor",
-    },
-    title: {
-      type: String,
       required: true,
     },
     fileUrl: {
       type: String,
+      required: true, // Internal path representing local / uploads bucket
+    },
+    extractedText: {
+      type: String, 
       required: true,
     },
-    originalName: String,
-    recordType: {
-      type: String,
-      enum: ["prescription", "lab_report", "scan", "general"],
-      default: "general",
+    structuredData: {
+      patientName: { type: String, default: "Not Found" },
+      doctor: { type: String, default: "Not Found" },
+      date: { type: String, default: "Not Found" },
+      medicines: [{ type: String }]
     },
-    notes: String,
+    documentType: {
+      type: String,
+      enum: ["Prescription", "Lab Report", "Bill", "Other"],
+      default: "Prescription",
+    }
   },
   { timestamps: true }
 );
