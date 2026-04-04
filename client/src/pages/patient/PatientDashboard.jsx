@@ -13,9 +13,6 @@ export default function PatientDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-blue-100 text-blue-800 p-4 rounded-lg border border-blue-200">
-        <h1 className="text-xl font-bold">hello patient</h1>
-      </div>
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Hello, {user?.name}</h1>
         <p className="text-gray-500 mt-1">Here is a quick overview of your health profile.</p>

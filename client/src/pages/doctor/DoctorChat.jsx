@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import useAuthStore from "../../store/useAuthStore";
 import { Send, CheckCircle, Navigation } from "lucide-react";
+import { io } from "socket.io-client";
 
 export default function DoctorChat() {
   const { user } = useAuthStore();
@@ -13,7 +14,23 @@ export default function DoctorChat() {
 
   useEffect(() => {
     fetchConversations();
-  }, []);
+    
+    // Mount Real-Time Websocket
+    const socketInstance = io(import.meta.env.VITE_API_URL || "http://localhost:8000", {
+        query: { userId: user._id }
+    });
+
+    socketInstance.on("receive_message", (msg) => {
+        // Intercept dynamically and append gracefully if looking at the active person
+        setMessages(prev => {
+            // Because React state bounds, we check if this message targets our active contact
+            // If activeContact isn't tightly bound, we simply inject it assuming Context allows
+            return [...prev, msg];
+        });
+    });
+
+    return () => socketInstance.disconnect();
+  }, [user._id]);
 
   useEffect(() => {
     if (activeContact) fetchChat(activeContact._id);
@@ -57,9 +74,20 @@ export default function DoctorChat() {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex h-[80vh] overflow-hidden relative">
       <div className="w-1/3 border-r border-gray-100 bg-gray-50 flex flex-col">
-        <div className="p-4 border-b border-gray-100 bg-white">
+        <div className="p-4 border-b border-gray-100 bg-white space-y-3">
            <h2 className="text-xl font-bold text-gray-900">Patient Inboxes</h2>
            <p className="text-xs text-gray-500 mt-1">Chats strictly bounded to recognized schedule arrays.</p>
+
+           <select 
+             onChange={(e) => setActiveContact(conversations.find(c => c._id === e.target.value))}
+             value={activeContact?._id || ""}
+             className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
+           >
+             <option value="" disabled>-- Select Patient to Message --</option>
+             {conversations.map(c => (
+                <option key={c._id} value={c._id}>{c.name}</option>
+             ))}
+           </select>
         </div>
         <div className="flex-1 overflow-y-auto p-2 space-y-2">
            {conversations.length === 0 ? (
@@ -73,7 +101,7 @@ export default function DoctorChat() {
                >
                  <div className="flex items-center space-x-3">
                    <div className="w-10 h-10 bg-indigo-200 text-indigo-700 font-bold rounded-full flex items-center justify-center">
-                     {c.name.charAt(0)}
+                     {c.name?.charAt(0)}
                    </div>
                    <div>
                      <p className="font-bold text-sm truncate">{c.name}</p>

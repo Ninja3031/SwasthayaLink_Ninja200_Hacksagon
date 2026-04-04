@@ -15,8 +15,11 @@ import SymptomTracker from "./pages/patient/SymptomTracker";
 import LabResults from "./pages/patient/LabResults";
 import EmergencySOS from "./pages/patient/EmergencySOS";
 import Chat from "./pages/patient/Chat";
+import DoctorAppointments from "./pages/doctor/DoctorAppointments";
+import DoctorPatients from "./pages/doctor/DoctorPatients";
 import DoctorLabResults from "./pages/doctor/DoctorLabResults";
 import DoctorChat from "./pages/doctor/DoctorChat";
+import DoctorPrescriptions from "./pages/doctor/DoctorPrescriptions";
 import EmergencyAlerts from "./pages/hospital/EmergencyAlerts";
 
 import ClaimNew from "./pages/patient/ClaimNew";
@@ -64,9 +67,10 @@ function App() {
         {/* Doctor Routes */}
         <Route path="/doctor" element={<ProtectedRoute allowedRoles={["doctor"]}><DoctorLayout /></ProtectedRoute>}>
           <Route path="dashboard" element={<DoctorDashboard />} />
-          <Route path="appointments" element={<div className="p-8 text-center text-gray-500 font-semibold bg-white rounded-xl shadow-sm border border-gray-100">Doctor Appointments Placeholder...</div>} />
-          <Route path="availability" element={<div className="p-8 text-center text-gray-500 font-semibold bg-white rounded-xl shadow-sm border border-gray-100">Doctor Availability Placeholder...</div>} />
+          <Route path="appointments" element={<DoctorAppointments />} />
+          <Route path="patients" element={<DoctorPatients />} />
           <Route path="lab-results" element={<DoctorLabResults />} />
+          <Route path="prescriptions" element={<DoctorPrescriptions />} />
           <Route path="chat" element={<DoctorChat />} />
         </Route>
 

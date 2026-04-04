@@ -6,6 +6,7 @@ import useAuthStore from "../../store/useAuthStore";
 export default function Appointments() {
   const [activeTab, setActiveTab] = useState("browse"); // 'browse' or 'mine'
   const [doctors, setDoctors] = useState([]);
+  const [hospitals, setHospitals] = useState([]);
   const [myAppointments, setMyAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -42,8 +43,12 @@ export default function Appointments() {
     setLoading(true);
     try {
       if (activeTab === "browse") {
-        const res = await axios.get("/api/v1/doctors", { withCredentials: true });
-        setDoctors(res.data.data);
+        const [docRes, hospRes] = await Promise.all([
+           axios.get("/api/v1/doctors", { withCredentials: true }),
+           axios.get("/api/v1/hospitals", { withCredentials: true })
+        ]);
+        setDoctors(docRes.data.data);
+        setHospitals(hospRes.data.data);
       } else {
         const res = await axios.get("/api/v1/appointments/user", { withCredentials: true });
         setMyAppointments(res.data.data);
@@ -65,8 +70,8 @@ export default function Appointments() {
         date: "",
         time: "",
         type: "Consultation",
-        hospital: doc ? (doc.hospital?.registrationNumber || doc.hospital?.name || doc.hospital?._id) : "",
-        specialty: doc ? doc.specialization : "",
+        hospital: doc ? doc.hospitalName : "",
+        specialty: doc ? doc.speciality : "",
         includeSymptoms: false,
         notes: ""
     });
@@ -81,8 +86,8 @@ export default function Appointments() {
           setFormData({
               ...formData,
               doctorId: targetDoc._id,
-              hospital: targetDoc.hospital?.registrationNumber || targetDoc.hospital?.name || targetDoc.hospital?._id || "",
-              specialty: targetDoc.specialization
+              hospital: targetDoc.hospitalName || "",
+              specialty: targetDoc.speciality
           });
       } else {
           setFormData({ ...formData, doctorId: "", hospital: "", specialty: "" });
@@ -116,12 +121,12 @@ export default function Appointments() {
   };
 
   const filteredDoctors = doctors.filter(d => {
-    const matchesName = d.user?.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSpec = specializationFilter === "All" || d.specialization === specializationFilter;
+    const matchesName = d.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSpec = specializationFilter === "All" || d.speciality === specializationFilter;
     return matchesName && matchesSpec;
   });
 
-  const uniqueSpecializations = ["All", ...new Set(doctors.map(d => d.specialization))];
+  const uniqueSpecializations = ["All", ...new Set(doctors.map(d => d.speciality))];
   
   // Validation checker for submit button enablement
   const isFormValid = formData.doctorId && formData.date && formData.time && formData.type;
@@ -185,13 +190,13 @@ export default function Appointments() {
                 <div className="h-28 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 opacity-90"></div>
                 <div className="px-6 pb-6 relative">
                   <div className="w-20 h-20 bg-white rounded-2xl shadow border-4 border-white absolute -top-10 flex items-center justify-center text-3xl font-black text-indigo-600 rotate-3 overflow-hidden">
-                    {doc.user?.name.charAt(0)}
+                    {doc.name?.charAt(0)}
                   </div>
                   <div className="mt-14">
-                    <h3 className="text-xl font-bold text-gray-900 tracking-tight">Dr. {doc.user?.name}</h3>
-                    <p className="text-indigo-600 font-bold text-sm tracking-wide uppercase mt-0.5">{doc.specialization}</p>
+                    <h3 className="text-xl font-bold text-gray-900 tracking-tight">Dr. {doc.name}</h3>
+                    <p className="text-indigo-600 font-bold text-sm tracking-wide uppercase mt-0.5">{doc.speciality}</p>
                     <div className="flex items-center text-sm font-medium text-gray-500 mt-4 bg-gray-50 inline-flex px-3 py-1.5 rounded-lg">
-                       <span className="flex items-center"><Clock className="w-4 h-4 mr-2 text-indigo-500"/> {doc.experienceYears || 5}+ yrs Exp</span>
+                       <span className="flex items-center"><Clock className="w-4 h-4 mr-2 text-indigo-500"/> {doc.experience || 5}+ yrs Exp</span>
                        <span className="mx-3 text-gray-300">|</span>
                        <span>₹{doc.consultationFee} </span>
                     </div>
@@ -231,7 +236,7 @@ export default function Appointments() {
                       <p className="text-sm font-medium text-indigo-600 mt-1 bg-indigo-50 inline-block px-2 py-0.5 rounded">{app.timeSlot}</p>
                     </td>
                     <td className="py-4 px-6">
-                      <p className="font-bold text-gray-900">Dr. {app.doctor?.user?.name || "Unknown"}</p>
+                      <p className="font-bold text-gray-900">Dr. {app.doctorDetailsSnapshot?.name || app.doctor?.name || "Unknown"}</p>
                       <p className="text-sm text-gray-500 uppercase tracking-wide text-xs mt-1">{app.specialty || "General"}</p>
                     </td>
                     <td className="py-4 px-6 text-gray-600 max-w-[200px]">
@@ -286,7 +291,7 @@ export default function Appointments() {
                          <select required value={formData.doctorId} onChange={handleDoctorChange} className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white font-medium transition-all">
                             <option value="" disabled>-- Select a specialized doctor --</option>
                             {doctors.filter(d => d.availabilityStatus).map(doc => (
-                              <option key={doc._id} value={doc._id}>Dr. {doc.user?.name} ({doc.specialization})</option>
+                              <option key={doc._id} value={doc._id}>Dr. {doc.name || "Unknown Doctor"} ({doc.speciality || "General"})</option>
                             ))}
                          </select>
                       </div>
@@ -324,7 +329,7 @@ export default function Appointments() {
                    <div className="space-y-6">
                       <div className="space-y-1.5">
                          <label className="text-sm font-bold text-gray-700 tracking-wide uppercase">Hospital / Clinic</label>
-                         <input type="text" placeholder="Auto-filled or typed manually" value={formData.hospital} onChange={(e) => setFormData({...formData, hospital: e.target.value})} className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white font-medium transition-all placeholder-gray-400" />
+                         <input readOnly disabled type="text" placeholder="Auto-filled from doctor" value={formData.hospital} className="w-full bg-gray-100 border border-gray-200 text-gray-500 rounded-xl px-4 py-3 outline-none font-medium transition-all cursor-not-allowed" />
                       </div>
 
                       <div className="space-y-1.5">

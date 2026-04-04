@@ -1,28 +1,34 @@
 import jwt from "jsonwebtoken";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { User } from "../models/User.js";
+import { Patient } from "../models/Patient.js";
+import { Doctor } from "../models/Doctor.js";
+import { Hospital } from "../models/Hospital.js";
 
-// Basic auth middleware
+// Basic auth middleware mapped across decoupled identities
 export const verifyJWT = asyncHandler(async (req, res, next) => {
   try {
     const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
     
     if (!token) {
-      throw new ApiError(401, "Unauthorized request");
+      throw new ApiError(401, "Unauthorized request constraints");
     }
 
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decodedToken?._id).select("-password");
+    
+    let userContext = null;
+    if (decodedToken.role === "patient") userContext = await Patient.findById(decodedToken._id).select("-password");
+    else if (decodedToken.role === "doctor") userContext = await Doctor.findById(decodedToken._id).select("-password");
+    else if (decodedToken.role === "hospital") userContext = await Hospital.findById(decodedToken._id).select("-password");
 
-    if (!user) {
-      throw new ApiError(401, "Invalid Access Token");
+    if (!userContext) {
+      throw new ApiError(401, "Invalid Access Map");
     }
 
-    req.user = user;
+    req.user = userContext;
     next();
   } catch (error) {
-    throw new ApiError(401, error?.message || "Invalid access token");
+    throw new ApiError(401, error?.message || "Invalid access logic bound tightly");
   }
 });
 

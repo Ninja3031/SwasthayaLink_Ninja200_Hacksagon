@@ -4,7 +4,7 @@ const prescriptionSchema = new mongoose.Schema(
   {
     patient: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Patient",
       required: true,
     },
     doctor: {
@@ -12,18 +12,23 @@ const prescriptionSchema = new mongoose.Schema(
       ref: "Doctor",
       required: true,
     },
-    medications: [
+    hospital: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Hospital",
+      required: true,
+    },
+    appointment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Appointment",
+      required: true,
+    },
+    medicines: [
       {
         name: { type: String, required: true },
-        composition: { type: String },
         dosage: { type: String, required: true },
         frequency: { type: String, required: true },
         duration: { type: String, required: true },
-        status: { 
-          type: String, 
-          enum: ["active", "completed"], 
-          default: "active" 
-        }
+        notes: { type: String }
       }
     ],
     notes: String,

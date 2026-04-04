@@ -7,7 +7,7 @@ import axios from "axios";
 export default function Auth() {
   const [selectedRole, setSelectedRole] = useState(null);
   const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({ name: "", email: "", password: "", contactNumber: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", password: "", phone: "", hospitalName: "", experience: "", speciality: "" });
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const { login, isAuthenticated, user } = useAuthStore();
@@ -27,9 +27,9 @@ export default function Auth() {
     e.preventDefault();
     setError("");
 
-    const endpoint = isLogin ? "/api/v1/auth/login" : "/api/v1/auth/register";
+    const endpoint = isLogin ? `/api/v1/auth/${selectedRole}/signin` : `/api/v1/auth/${selectedRole}/signup`;
     try {
-      const res = await axios.post(endpoint, { ...formData, role: selectedRole });
+      const res = await axios.post(endpoint, { ...formData });
       login(res.data.data.user);
       navigate(`/${selectedRole}/dashboard`);
     } catch (err) {
@@ -83,26 +83,60 @@ export default function Auth() {
           <button onClick={() => setSelectedRole(null)} className="mr-4 hover:bg-blue-700 p-2 rounded-full transition-colors">
             <ArrowLeft size={20} />
           </button>
-          <h2 className="text-xl font-semibold flex items-center capitalize">{selectedRole} Login</h2>
+          <h2 className="text-xl font-semibold flex items-center capitalize">{selectedRole} {isLogin ? "Sign In" : "Sign Up"}</h2>
         </div>
         
         <form onSubmit={handleAuth} className="p-8 space-y-6">
           {error && <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm">{error}</div>}
           
           {!isLogin && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-              <input required type="text" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="John Doe" onChange={e => setFormData({...formData, name: e.target.value})}/>
+            <div className="space-y-4">
+               {["patient", "doctor"].includes(selectedRole) && (
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                   <input required type="text" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="First Last" onChange={e => setFormData({...formData, name: e.target.value})}/>
+                 </div>
+               )}
+               {selectedRole === "hospital" && (
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">Hospital Name</label>
+                   <input required type="text" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="General Hospital" onChange={e => setFormData({...formData, name: e.target.value})}/>
+                 </div>
+               )}
+               {["patient", "doctor"].includes(selectedRole) && (
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                   <input required type="tel" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="+12 3456789" onChange={e => setFormData({...formData, phone: e.target.value})}/>
+                 </div>
+               )}
+               {selectedRole === "doctor" && (
+                 <>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Target Base Hospital</label>
+                     <input required type="text" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="E.g. Apollo Hospital" onChange={e => setFormData({...formData, hospitalName: e.target.value})}/>
+                   </div>
+                   <div className="flex gap-4">
+                       <div className="flex-1">
+                         <label className="block text-sm font-medium text-gray-700 mb-1">Primary Speciality</label>
+                         <input required type="text" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Cardiology" onChange={e => setFormData({...formData, speciality: e.target.value})}/>
+                       </div>
+                       <div className="w-32">
+                         <label className="block text-sm font-medium text-gray-700 mb-1">Experience (Yrs)</label>
+                         <input required type="number" min="0" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="5" onChange={e => setFormData({...formData, experience: e.target.value})}/>
+                       </div>
+                   </div>
+                 </>
+               )}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-            <input required type="email" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="you@domain.com" onChange={e => setFormData({...formData, email: e.target.value})}/>
+             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+             <input required type="email" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="you@domain.com" onChange={e => setFormData({...formData, email: e.target.value})}/>
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <input required type="password" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="••••••••" onChange={e => setFormData({...formData, password: e.target.value})}/>
           </div>
 
@@ -113,7 +147,7 @@ export default function Auth() {
           <p className="text-center text-sm text-gray-600">
             {isLogin ? "Don't have an account? " : "Already have an account? "}
             <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-blue-600 font-medium hover:underline">
-              {isLogin ? "Create one" : "Sign in"}
+              {isLogin ? "Sign Up" : "Sign In"}
             </button>
           </p>
         </form>

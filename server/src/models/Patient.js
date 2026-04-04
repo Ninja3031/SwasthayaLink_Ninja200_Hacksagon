@@ -3,13 +3,12 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { ROLES } from "../constants/roles.js";
 
-const userSchema = new Schema(
+const patientSchema = new Schema(
   {
     name: {
       type: String,
       required: true,
       trim: true,
-      index: true,
     },
     email: {
       type: String,
@@ -18,16 +17,26 @@ const userSchema = new Schema(
       lowercase: true,
       trim: true,
     },
+    phone: {
+      type: String,
+      required: true,
+    },
+    abhaId: {
+      type: String, // optional
+    },
     password: {
       type: String,
       required: [true, "Password is required"],
     },
     role: {
       type: String,
-      enum: Object.values(ROLES),
       default: ROLES.PATIENT,
     },
-    contactNumber: {
+    location: {
+      lat: Number,
+      lng: Number
+    },
+    refreshToken: {
       type: String,
     },
     emergencyContacts: [
@@ -36,28 +45,21 @@ const userSchema = new Schema(
         phone: String
       }
     ],
-    // Tracks geographical lat/lng for SOS dispatcher
-    location: {
-      lat: Number,
-      lng: Number
-    },
-    refreshToken: {
-      type: String,
-    },
   },
   { timestamps: true }
 );
 
-userSchema.pre("save", async function () {
-  if (!this.isModified("password")) return;
-  this.password = await bcrypt.hash(this.password, 10);
+patientSchema.pre("save", async function () {
+  if (this.isModified("password")) {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
 });
 
-userSchema.methods.isPasswordCorrect = async function (password) {
+patientSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
-userSchema.methods.generateAccessToken = function () {
+patientSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
       _id: this._id,
@@ -71,4 +73,4 @@ userSchema.methods.generateAccessToken = function () {
   );
 };
 
-export const User = mongoose.model("User", userSchema);
+export const Patient = mongoose.model("Patient", patientSchema);

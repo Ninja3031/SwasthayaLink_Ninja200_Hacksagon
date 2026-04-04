@@ -4,7 +4,7 @@ const claimSchema = new Schema(
   {
     patient: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Patient",
       required: true,
     },
     disease: {

@@ -13,9 +13,6 @@ export default function DoctorDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-green-100 text-green-800 p-4 rounded-lg border border-green-200">
-        <h1 className="text-xl font-bold">hello doctor</h1>
-      </div>
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Welcome, Dr. {user?.name}</h1>
         <p className="text-gray-500 mt-1">Here is a summary of your schedule for today.</p>

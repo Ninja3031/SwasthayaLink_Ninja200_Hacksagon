@@ -129,13 +129,14 @@ export default function Medications() {
                   <div className="flex items-center space-x-3">
                      <FileText className="text-blue-500 w-5 h-5"/>
                      <div>
-                       <p className="text-sm text-gray-500">Prescription Date</p>
-                       <p className="font-semibold text-gray-900">{new Date(prescription.createdAt).toLocaleDateString()}</p>
+                       <p className="font-bold text-gray-900">{prescription.hospital?.name || "Unknown Healthcare Point"}</p>
+                       <p className="text-sm text-gray-500">{new Date(prescription.createdAt).toLocaleDateString()}</p>
                      </div>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-gray-500">Prescribed by</p>
-                    <p className="font-bold text-gray-900">Dr. {prescription.doctor?.user?.name || "Clinic"}</p>
+                    <p className="font-bold text-gray-900">Dr. {prescription.doctor?.name || "Clinic"}</p>
+                    {prescription.doctor?.speciality && <p className="text-xs text-gray-400">{prescription.doctor.speciality}</p>}
                   </div>
                </div>
 
@@ -147,7 +148,7 @@ export default function Medications() {
                  )}
 
                  <div className="space-y-4">
-                   {prescription.medications.map((med, index) => {
+                   {prescription.medicines?.map((med, index) => {
                      const uniqueId = `${prescription._id}_${index}`;
                      const isActive = activeAlternativeId === uniqueId;
 
@@ -155,17 +156,14 @@ export default function Medications() {
                       <div key={index} className="border border-gray-100 rounded-xl p-5 hover:bg-gray-50 transition-colors">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                           <div className="flex-1">
-                             <div className="flex items-center space-x-3 mb-1">
+                             <div className="flex items-center space-x-3 mb-2">
                                <h3 className="text-xl font-bold text-gray-900">{med.name}</h3>
-                               <span className={`px-2 py-0.5 text-xs font-semibold rounded ${med.status === 'completed' ? 'bg-gray-100 text-gray-600' : 'bg-green-100 text-green-700'}`}>
-                                 {med.status.toUpperCase()}
-                               </span>
                              </div>
-                             {med.composition && <p className="text-sm text-gray-500 mb-2">Composition: {med.composition}</p>}
                              <div className="flex items-center space-x-4 text-sm text-gray-600">
                                 <span className="flex items-center"><CheckCircle className="w-4 h-4 mr-1 text-blue-500"/> {med.dosage}</span>
                                 <span className="flex items-center"><Clock className="w-4 h-4 mr-1 text-blue-500"/> {med.frequency} for {med.duration}</span>
                              </div>
+                             {med.notes && <p className="text-sm text-gray-500 mt-2 bg-gray-100 px-3 py-1.5 rounded-lg inline-block">Instruction: {med.notes}</p>}
                           </div>
                           <div>
                             <button onClick={() => handleFindAlternatives(med.name, uniqueId)} className={`flex items-center px-4 py-2 border rounded-lg font-medium transition-colors ${isActive ? 'bg-green-50 border-green-200 text-green-700' : 'border-gray-200 text-gray-700 hover:bg-white hover:border-green-400 hover:text-green-600 shadow-sm'}`}>

@@ -4,7 +4,7 @@ const appointmentSchema = new Schema(
   {
     patient: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Patient",
       required: true,
     },
     doctor: {
@@ -12,10 +12,15 @@ const appointmentSchema = new Schema(
       ref: "Doctor",
       required: true,
     },
+    doctorDetailsSnapshot: {
+       name: String,
+       speciality: String,
+       hospitalName: String
+    },
     hospital: {
       type: Schema.Types.ObjectId,
       ref: "Hospital",
-      required: true,
+      required: false,
     },
     date: {
       type: Date,

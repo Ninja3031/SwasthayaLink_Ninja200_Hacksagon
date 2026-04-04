@@ -33,7 +33,10 @@ export const getMedicalRecords = asyncHandler(async (req, res) => {
 
 // --- PRESCRIPTIONS ---
 export const getPrescriptions = asyncHandler(async (req, res) => {
-  const prescriptions = await Prescription.find({ patient: req.user._id }).populate("doctor", "specialization user").sort("-createdAt");
+  const prescriptions = await Prescription.find({ patient: req.user._id })
+    .populate("doctor", "name speciality")
+    .populate("hospital", "name")
+    .sort("-createdAt");
   return res.status(200).json(new ApiResponse(200, prescriptions, "Prescriptions fetched"));
 });
 

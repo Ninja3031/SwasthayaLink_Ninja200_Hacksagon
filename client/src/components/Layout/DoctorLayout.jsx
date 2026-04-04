@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { Activity, Home, CalendarCheck, Clock, LogOut } from "lucide-react";
+import { Activity, Home, CalendarCheck, Clock, FileText, LogOut } from "lucide-react";
 import useAuthStore from "../../store/useAuthStore";
 
 export default function DoctorLayout() {
@@ -14,7 +14,10 @@ export default function DoctorLayout() {
   const menus = [
     { name: "Dashboard", link: "/doctor/dashboard", icon: Home },
     { name: "Appointments", link: "/doctor/appointments", icon: CalendarCheck },
-    { name: "Availability", link: "/doctor/availability", icon: Clock },
+    { name: "My Patients", link: "/doctor/patients", icon: Clock },
+    { name: "Lab Results", link: "/doctor/lab-results", icon: Activity },
+    { name: "Prescriptions", link: "/doctor/prescriptions", icon: FileText },
+    { name: "Messages", link: "/doctor/chat", icon: Clock },
   ];
 
   return (

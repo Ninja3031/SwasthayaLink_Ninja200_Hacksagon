@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { SOS } from "../models/SOS.js";
-import { User } from "../models/User.js";
+import { Patient } from "../models/Patient.js";
 
 // @route POST /api/v1/emergency/sos
 // @desc Emergency webhook capturing coordinates natively
@@ -17,8 +17,8 @@ export const triggerSOS = asyncHandler(async (req, res) => {
     status: "active"
   });
 
-  // Overwrite the User's last known tracker ping
-  await User.findByIdAndUpdate(req.user._id, { location: { lat, lng } });
+  // Overwrite the Patient's last known tracker ping
+  await Patient.findByIdAndUpdate(req.user._id, { location: { lat, lng } });
 
   // Optional: In a full architecture, we trigger Socket.IO to local hospitals here.
   // For constraints demo logic: we successfully return

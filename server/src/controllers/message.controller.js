@@ -16,12 +16,11 @@ export const sendMessage = asyncHandler(async (req, res) => {
   let validationQuery = {};
   
   if (req.user.role === 'patient') {
-     const targetDoctor = await Doctor.findOne({ user: receiverId });
+     const targetDoctor = await Doctor.findById(receiverId);
      if (!targetDoctor) throw new ApiError(404, "Invalid recipient profile.");
      validationQuery = { patient: req.user._id, doctor: targetDoctor._id };
   } else if (req.user.role === 'doctor') {
-     const selfDoctor = await Doctor.findOne({ user: req.user._id });
-     validationQuery = { patient: receiverId, doctor: selfDoctor._id };
+     validationQuery = { patient: receiverId, doctor: req.user._id };
   } else {
      throw new ApiError(403, "Messaging is restricted strictly to Doctor-Patient boundaries.");
   }
@@ -46,36 +45,48 @@ export const sendMessage = asyncHandler(async (req, res) => {
 // @route GET /api/v1/messages/conversations
 // @desc Fetches native chat arrays linked
 export const getConversationsList = asyncHandler(async (req, res) => {
-  // Aggregate distinct participants
-  const messages = await Message.find({
-    $or: [{ sender: req.user._id }, { receiver: req.user._id }]
-  })
-  .populate("sender", "name role")
-  .populate("receiver", "name role")
-  .sort("-createdAt");
+  let contactsHash = {};
 
-  // Filter distinct conversation groups (contacts)
-  const contactsHash = {};
-  messages.forEach(msg => {
-     let otherUser = msg.sender._id.toString() === req.user._id.toString() ? msg.receiver : msg.sender;
-     if (!contactsHash[otherUser._id]) {
-         contactsHash[otherUser._id] = {
-            contact: otherUser,
-            lastMessage: msg.content,
-            timestamp: msg.createdAt
-         };
-     }
-  });
+  if (req.user.role === 'patient') {
+     const uniqueAppts = await Appointment.find({
+         patient: req.user._id,
+         status: { $in: ['pending', 'confirmed', 'completed'] }
+     }).populate("doctor", "name speciality role");
+
+     uniqueAppts.forEach(appt => {
+        if (appt.doctor && !contactsHash[appt.doctor._id]) {
+            contactsHash[appt.doctor._id] = {
+               contact: appt.doctor,
+               lastMessage: "Secure bounds loaded.",
+               timestamp: appt.createdAt
+            };
+        }
+     });
+  } else if (req.user.role === 'doctor') {
+     const uniqueAppts = await Appointment.find({
+         doctor: req.user._id,
+         status: { $in: ['pending', 'confirmed', 'completed'] }
+     }).populate("patient", "name role");
+
+     uniqueAppts.forEach(appt => {
+        if (appt.patient && !contactsHash[appt.patient._id]) {
+            contactsHash[appt.patient._id] = {
+               contact: appt.patient,
+               lastMessage: "Authorized target acquired.",
+               timestamp: appt.createdAt
+            };
+        }
+     });
+  }
 
   const parsedConversations = Object.values(contactsHash);
-
-  return res.status(200).json(new ApiResponse(200, parsedConversations, "Inbox Rendered"));
+  return res.status(200).json(new ApiResponse(200, parsedConversations, "Inbox Rendered via Appointments"));
 });
 
 // @route GET /api/v1/messages/:userId
 // @desc Load native 1-on-1 socket trace
 export const getMessagesHistory = asyncHandler(async (req, res) => {
-  const { userId } = params; // Target contact
+  const { userId } = req.params; // Target contact
 
   const messages = await Message.find({
     $or: [

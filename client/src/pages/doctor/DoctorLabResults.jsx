@@ -28,19 +28,12 @@ export default function DoctorLabResults() {
   };
 
   const fetchPatientList = async () => {
-     // For demo bounds: A doctor needs a list of assignable Patients. 
-     // We will pull the global users directory specifically bounded strictly.
      try {
-       // Since no formal Doctor-Patient pairing API exists outside appointments,
-       // We can just query a specific endpoint or create a mock dropdown
-       // Actually, there's no `GET /patients` inherently open. 
-       // We will just let them search by email if needed, or query `/api/v1/hospitals/patients` if they have access.
-       // Let's assume there's a patient API or we'll type the patient ID.
-     } catch (err) {}
-  };
-
-  const overridePatientFetch = async () => {
-      // Temporary workaround payload
+       const res = await axios.get("/api/v1/doctors/patients", { withCredentials: true });
+       setPatients(res.data.data);
+     } catch (err) {
+       console.error("Failed mapping explicit patient structures");
+     }
   };
 
   const submitUpload = async (e) => {
@@ -112,8 +105,13 @@ export default function DoctorLabResults() {
 
              <form onSubmit={submitUpload} className="p-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Target Patient User ID *</label>
-                  <input required placeholder="Paste Mongo ObjectID bounds" value={selectedPatientId} onChange={e=>setSelectedPatientId(e.target.value)} className="w-full px-4 py-2 border rounded-lg outline-none focus:ring-blue-500" />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Target Patient *</label>
+                  <select required value={selectedPatientId} onChange={e=>setSelectedPatientId(e.target.value)} className="w-full px-4 py-2 border rounded-lg outline-none focus:ring-blue-500 bg-white">
+                      <option value="">Select an affiliated patient...</option>
+                      {patients.map(p => (
+                          <option key={p._id} value={p._id}>{p.name} ({p.email})</option>
+                      ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Document Title *</label>

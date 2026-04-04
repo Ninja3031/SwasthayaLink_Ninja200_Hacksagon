@@ -58,9 +58,20 @@ export default function Chat() {
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex h-[80vh] overflow-hidden relative">
       {/* Sidebar bounds */}
       <div className="w-1/3 border-r border-gray-100 bg-gray-50 flex flex-col">
-        <div className="p-4 border-b border-gray-100 bg-white">
+        <div className="p-4 border-b border-gray-100 bg-white space-y-3">
            <h2 className="text-xl font-bold text-gray-900">Secure Direct Message</h2>
            <p className="text-xs text-gray-500 mt-1">Chats strictly bounded to validated appointments natively.</p>
+
+           <select 
+             onChange={(e) => setActiveContact(conversations.find(c => c._id === e.target.value))}
+             value={activeContact?._id || ""}
+             className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
+           >
+             <option value="" disabled>-- Select Doctor to Message --</option>
+             {conversations.map(c => (
+                <option key={c._id} value={c._id}>Dr. {c.name} ({c.speciality || 'General'})</option>
+             ))}
+           </select>
         </div>
         <div className="flex-1 overflow-y-auto p-2 space-y-2">
            {conversations.length === 0 ? (

@@ -4,6 +4,7 @@ import { Appointment } from "../models/Appointment.js";
 import { Doctor } from "../models/Doctor.js";
 import { Hospital } from "../models/Hospital.js";
 import { ApiResponse } from "../utils/apiResponse.js";
+import mongoose from "mongoose";
 
 import { Symptom } from "../models/Symptom.js";
 
@@ -14,20 +15,49 @@ export const bookAppointment = asyncHandler(async (req, res) => {
   
   if (!doctorId || !date || !time || !type) throw new ApiError(400, "Validation hook failed missing required components.");
 
+  // Generate Doctor Execution Block dynamically mapping limits
+  const targetDoctor = await Doctor.findById(doctorId);
+  if (!targetDoctor) throw new ApiError(404, "Physician Identity Map unavailable.");
+
   // If includeSymptoms bounds true, query directly
   let pulledSymptoms = [];
   if (includeSymptoms) {
       pulledSymptoms = await Symptom.find({ patient: req.user._id }).sort("-dateTime").limit(5).lean();
   }
   
+  console.log("Incoming Appointment Body:", req.body);
+  
+  let resolvedHospitalId = hospital;
+  
+  if (!resolvedHospitalId && targetDoctor.hospitalName) {
+      resolvedHospitalId = targetDoctor.hospitalName;
+  }
+
+  if (resolvedHospitalId && !mongoose.Types.ObjectId.isValid(resolvedHospitalId)) {
+      // Fuzzy trace map across unconstrained constraints natively
+      const mappedHosp = await Hospital.findOne({ name: { $regex: new RegExp(resolvedHospitalId, 'i') } });
+      if (mappedHosp) {
+          resolvedHospitalId = mappedHosp._id;
+      } else {
+          resolvedHospitalId = undefined; // Drop natively to prevent BSON ObjectId CastError
+      }
+  } else if (!resolvedHospitalId) {
+      resolvedHospitalId = undefined;
+  }
+
   const appointment = await Appointment.create({
     patient: req.user._id,
     doctor: doctorId,
-    hospital: hospital, 
+    hospital: resolvedHospitalId, 
+    doctorDetailsSnapshot: {
+       name: targetDoctor.name,
+       speciality: targetDoctor.speciality,
+       hospitalName: targetDoctor.hospitalName
+    },
     date,
     timeSlot: time,
     type,
-    specialty,
+    specialty: specialty || targetDoctor.speciality,
     notes,
     reason: "Booked via UI",
     selectedSymptoms: includeSymptoms ? pulledSymptoms : []
@@ -49,10 +79,7 @@ export const getPatientAppointments = asyncHandler(async (req, res) => {
 // @route GET /api/v1/appointments/doctor
 // @desc Get current doctor's appointments
 export const getDoctorAppointments = asyncHandler(async (req, res) => {
-  const doctor = await Doctor.findOne({ user: req.user._id });
-  if (!doctor) throw new ApiError(404, "Doctor profile not found");
-
-  const appointments = await Appointment.find({ doctor: doctor._id })
+  const appointments = await Appointment.find({ doctor: req.user._id })
     .populate("patient hospital")
     .sort({ date: -1 });
 
@@ -62,10 +89,7 @@ export const getDoctorAppointments = asyncHandler(async (req, res) => {
 // @route GET /api/v1/appointments/hospital
 // @desc Get current hospital's appointments
 export const getHospitalAppointments = asyncHandler(async (req, res) => {
-  const hospital = await Hospital.findOne({ user: req.user._id });
-  if (!hospital) throw new ApiError(404, "Hospital profile not found");
-
-  const appointments = await Appointment.find({ hospital: hospital._id })
+  const appointments = await Appointment.find({ hospital: req.user._id })
     .populate("patient doctor")
     .sort({ date: -1 });
 

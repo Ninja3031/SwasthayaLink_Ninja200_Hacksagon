@@ -4,7 +4,7 @@ const ngoSchema = new Schema(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Patient",
       required: true,
     },
     ngoName: {
