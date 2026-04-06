@@ -132,7 +132,7 @@ npm start
 
 ## 🔒 Security
 
-- **Strict Hospital Constraints**: New doctor registrations and hospital logins are restricted to a predefined list of recognized hospitals (Apollo, AIIMS, Fortis, Max, Manipal) to ensure data integrity.
+- **Strict Hospital Constraints**: New doctor registrations and hospital logins are restricted to a predefined list to ensure data integrity.
 - **JWT-based Auth**: Secure access across all three portals using industry-standard tokenization.
 
 ## 📄 License
