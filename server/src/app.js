@@ -8,7 +8,23 @@ import path from "path";
 const app = express();
 
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || "*",
+  origin: (origin, callback) => {
+    // allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      process.env.CORS_ORIGIN,
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "https://swasthaya-link-ninja200-hacksagon-6.vercel.app"
+    ];
+
+    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes("*")) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
 
