@@ -50,7 +50,7 @@ SwasthyaLink is a comprehensive healthcare management platform designed to bridg
 └── package.json      # Root dependencies and scripts
 ```
 
-## ⚙️ Installation & Setup
+## ⚙️ Installation & Setup (Local Development)
 
 1. **Clone the repository**:
    ```bash
@@ -58,26 +58,77 @@ SwasthyaLink is a comprehensive healthcare management platform designed to bridg
    cd SwasthyaLink
    ```
 
-2. **Install dependencies**:
+2. **Install all dependencies**:
    ```bash
    npm run install:all
    ```
 
-3. **Environment Setup**:
-   Create a `.env` file in the root and add the following:
+3. **Environment Setup** — copy the example and fill in your values:
+   ```bash
+   cp .env.example .env
+   ```
+   Required variables:
    ```env
    PORT=8000
    MONGO_URI=your_mongodb_connection_string
    JWT_SECRET=your_jwt_secret
    CORS_ORIGIN=http://localhost:5174
+   NODE_ENV=development
    ```
 
-4. **Run the application**:
+4. **Run in development mode**:
    ```bash
-   # Runs both frontend and backend concurrently
    npm run dev
    ```
-   The application will be available at `http://localhost:5174`.
+   The app will be at `http://localhost:5174` (client) and `http://localhost:8000` (API).
+
+---
+
+## 🚀 Production Deployment
+
+### Option 1: Render (Recommended — Free Tier)
+
+1. Push your project to GitHub.
+2. Go to [Render.com](https://render.com) → **New Web Service**.
+3. Connect your repository and set:
+   - **Build Command**: `npm run install:all && npm run build`
+   - **Start Command**: `npm start`
+4. Add these **Environment Variables** in the Render dashboard:
+   ```
+   MONGO_URI=your_production_mongodb_atlas_uri
+   JWT_SECRET=your_production_secret
+   PORT=8000
+   NODE_ENV=production
+   CORS_ORIGIN=https://your-app-name.onrender.com
+   ```
+5. Deploy — the backend will serve the built React frontend automatically.
+
+### Option 2: Docker
+
+Build and run the full stack with a single command:
+```bash
+# Copy and configure your environment file first
+cp .env.example .env
+
+# Build and start all services
+docker compose up --build
+```
+The app will be available at `http://localhost:8000`.
+
+### Option 3: Manual Build + Start
+
+```bash
+# 1. Install all dependencies
+npm run install:all
+
+# 2. Build the React frontend
+npm run build
+
+# 3. Start the production server (serves the frontend + API)
+npm start
+```
+
+---
 
 ## 🔒 Security
 

@@ -3,6 +3,7 @@ import axios from "axios";
 import useAuthStore from "../../store/useAuthStore";
 import { Send, UserCheck, CheckCircle, Video } from "lucide-react";
 import { io } from "socket.io-client";
+import { API_BASE_URL } from "../../api/config";
 import VideoCallModal from "../../components/VideoCallModal";
 
 export default function Chat() {
@@ -19,7 +20,7 @@ export default function Chat() {
     fetchConversations();
 
     // Mount Real-Time Websocket for Patient
-    const socketInstance = io(import.meta.env.VITE_API_URL || "http://localhost:8000", {
+    const socketInstance = io(API_BASE_URL, {
         query: { userId: user._id }
     });
     setSocket(socketInstance);

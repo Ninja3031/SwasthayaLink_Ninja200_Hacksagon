@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FileText, Download, UserCheck, Calendar } from "lucide-react";
+import { API_BASE_URL } from "../../api/config";
 
 export default function LabResults() {
   const [reports, setReports] = useState([]);
@@ -55,7 +56,7 @@ export default function LabResults() {
                      </div>
                   </div>
                   
-                  <a href={`http://localhost:8000${r.reportFile}`} target="_blank" rel="noreferrer" className="flex items-center px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-bold transition-colors">
+                  <a href={`${API_BASE_URL}${r.reportFile}`} target="_blank" rel="noreferrer" className="flex items-center px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-sm font-bold transition-colors">
                      <Download className="w-4 h-4 mr-2" /> Download Document
                   </a>
               </div>

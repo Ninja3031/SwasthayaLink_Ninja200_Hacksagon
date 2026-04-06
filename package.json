@@ -5,6 +5,8 @@
     "dev:server": "npm run dev --prefix server",
     "dev:client": "npm run dev --prefix client",
     "install:all": "npm install && npm install --prefix server && npm install --prefix client",
+    "build": "npm run build --prefix client",
+    "start": "NODE_ENV=production npm start --prefix server",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\""
   },
   "devDependencies": {

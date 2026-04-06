@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import medicineRoutes from "./routes/medicine.routes.js";
+import path from "path";
 
 const app = express();
 
@@ -18,6 +19,9 @@ app.use(morgan("dev"));
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(cookieParser());
+
+// Serve static files from the 'public' directory
+app.use(express.static("public"));
 
 // Route imports
 import authRoutes from './routes/auth.routes.js';
@@ -53,5 +57,15 @@ app.get("/api/v1/healthcheck", (req, res) => {
 // Import and use Error Middleware
 import { errorHandler } from "./middlewares/error.middleware.js";
 app.use(errorHandler);
+
+// Serve frontend in production
+if (process.env.NODE_ENV === "production") {
+  const __dirname = path.resolve();
+  app.use(express.static(path.join(__dirname, "../client/dist")));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "../client", "dist", "index.html"));
+  });
+}
 
 export { app };
